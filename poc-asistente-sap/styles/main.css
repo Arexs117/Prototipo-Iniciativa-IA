@@ -9,6 +9,7 @@
 @import "./components/suggestion-cards.css";
 @import "./components/summary-card.css";
 @import "./components/clarification-chips.css";
+@import "./components/file-protocol-warning.css";
 
 .app-shell {
   height: 100%;

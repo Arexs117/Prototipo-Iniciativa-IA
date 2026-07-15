@@ -9,6 +9,42 @@
 <link rel="stylesheet" href="styles/main.css" />
 </head>
 <body>
+
+<!--
+  Este script NO es un módulo (a propósito): los navegadores bloquean por seguridad tanto
+  los módulos ES6 como fetch() cuando el archivo se abre con doble clic (protocolo file://).
+  Un script normal sí puede ejecutarse en ese caso, así que es la única forma de avisarle
+  al usuario qué está pasando en vez de mostrar una pantalla en blanco sin explicación.
+-->
+<script>
+  if (window.location.protocol === 'file:') {
+    document.write(
+      '<div class="protocol-warning" id="protocol-warning">' +
+        '<div class="protocol-warning__card">' +
+          '<div class="protocol-warning__icon" aria-hidden="true">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4.5"/><circle cx="12" cy="16.3" r=".4" fill="currentColor" stroke="none"/><path d="M10.3 3.9 2.5 18a1.8 1.8 0 0 0 1.6 2.7h15.8a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.8 1.8 0 0 0-3.4 0Z"/></svg>' +
+          '</div>' +
+          '<h1 class="protocol-warning__title">Este archivo necesita abrirse desde un servidor local</h1>' +
+          '<p class="protocol-warning__text">Al abrir <code>index.html</code> con doble clic, el navegador bloquea por seguridad la carga de los módulos JavaScript y de los datos (protocolo <code>file://</code>). No es un error del proyecto — todas las apps modernas sin backend necesitan servirse por <code>http://</code>, aunque sea localmente. Elige una opción:</p>' +
+          '<div class="protocol-warning__option">' +
+            '<div class="protocol-warning__option-title">Opción 1 — Python (ya viene instalado en Mac y Linux)</div>' +
+            '<code class="protocol-warning__code">cd poc-asistente-sap\npython3 -m http.server 8000</code>' +
+            '<p class="protocol-warning__hint">Luego abre http://localhost:8000/index.html en tu navegador.</p>' +
+          '</div>' +
+          '<div class="protocol-warning__option">' +
+            '<div class="protocol-warning__option-title">Opción 2 — Node.js</div>' +
+            '<code class="protocol-warning__code">cd poc-asistente-sap\nnpx serve .</code>' +
+          '</div>' +
+          '<div class="protocol-warning__option">' +
+            '<div class="protocol-warning__option-title">Opción 3 — Visual Studio Code</div>' +
+            '<p class="protocol-warning__hint">Instala la extensión "Live Server", clic derecho sobre index.html → "Open with Live Server".</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+</script>
+
 <div id="app" class="app-shell">
 
   <header class="app-header">
