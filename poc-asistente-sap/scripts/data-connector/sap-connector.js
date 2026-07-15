@@ -170,13 +170,21 @@ function obtenerInventarioPorTienda(codigoTienda) {
 // ---------------------------------------------------------------------------
 
 function buscarPorNombreAproximado(texto, filas, campoCodigo, campoNombre, mapearRegistro) {
-  const candidatos = filas
+  let candidatos = filas
     .map((fila) => {
       const { coincide, score } = coincidenciaAproximada(texto, fila[campoNombre], UMBRAL_COINCIDENCIA);
       return { fila, coincide, score };
     })
     .filter((c) => c.coincide)
     .sort((a, b) => b.score - a.score);
+
+  // Si el texto coincide EXACTO con un nombre (score 1, p. ej. el usuario eligió "Tienda
+  // Cumbres" desde un chip de aclaración), ese es el único resultado válido — sin este filtro,
+  // "Tienda Cumbres" seguiría matcheando también "Tienda Cumbres Sur" por ser prefijo, y la
+  // aclaración nunca se resolvería (bug crítico: el usuario elige una opción y el asistente
+  // vuelve a preguntar lo mismo).
+  const exactos = candidatos.filter((c) => c.score === 1);
+  if (exactos.length > 0) candidatos = exactos;
 
   return candidatos.map((c) => ({
     codigo: c.fila[campoCodigo],

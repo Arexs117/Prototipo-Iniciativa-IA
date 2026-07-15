@@ -28,6 +28,7 @@ import { expandirAbreviaciones } from '../nlu/abbreviations.js';
 import { clasificarIntenciones } from '../nlu/intent-classifier.js';
 import { extraerEntidades } from '../nlu/entity-extractor.js';
 import { resolverAmbiguedad } from '../nlu/ambiguity-resolver.js';
+import { normalizar } from '../shared/text-utils.js';
 
 import {
   crearSessionState,
@@ -51,14 +52,31 @@ async function inicializarMotor(rutaExcel) {
 // Continuación de una intención "en espera" (slot pendiente de un turno anterior)
 // ---------------------------------------------------------------------------
 
-function construirEntidadesDesdePendiente(estado, entidadesDelTurno) {
+/**
+ * Si el turno anterior ofreció opciones concretas (chips de aclaración) y este mensaje
+ * coincide EXACTO con el nombre de una de ellas, esa es la respuesta — sin pasar por la
+ * extracción difusa de entidades. Necesario porque el usuario suele responder tal cual una
+ * de las opciones que nosotros mismos ofrecimos (p. ej. clic en un chip), y esa opción puede
+ * ser, a la vez, un prefijo textual de otra ("Tienda Cumbres" es prefijo de "Tienda Cumbres
+ * Sur") — la búsqueda difusa por diseño seguiría reportando ambigüedad en ese caso.
+ */
+function coincideConOpcionOfrecida(pendiente, textoNormalizado) {
+  if (!pendiente.opcionesOfrecidas || !textoNormalizado) return null;
+  const texto = normalizar(textoNormalizado);
+  return pendiente.opcionesOfrecidas.find((op) => normalizar(op.nombre) === texto) || null;
+}
+
+function construirEntidadesDesdePendiente(estado, entidadesDelTurno, textoNormalizado) {
   const pendiente = estado.pendiente;
+  const opcionElegida = coincideConOpcionOfrecida(pendiente, textoNormalizado);
   const candidatosDelTurno = entidadesDelTurno[pendiente.slot] || [];
 
   const entidadesResueltas = {};
   for (const tipo of TIPOS_ENTIDAD) {
     if (tipo === pendiente.slot) {
-      if (candidatosDelTurno.length > 1) {
+      if (opcionElegida) {
+        entidadesResueltas[tipo] = { valor: opcionElegida.codigo, origen: 'turno_actual' };
+      } else if (candidatosDelTurno.length > 1) {
         entidadesResueltas[tipo] = { candidatos: candidatosDelTurno, origen: 'turno_actual_ambiguo' };
       } else if (candidatosDelTurno.length === 1) {
         entidadesResueltas[tipo] = { valor: candidatosDelTurno[0].codigo, origen: 'turno_actual' };
@@ -83,7 +101,8 @@ function guardarPendiente(estado, intencion, resolucion, entidadesResueltas) {
     if (entidadesResueltas[tipo]?.valor) entidadesParciales[tipo] = entidadesResueltas[tipo].valor;
   }
   const slot = resolucion.necesitaAclaracion?.slot || resolucion.necesitaDatoFaltante?.slot;
-  estado.pendiente = { intencion, slot, entidadesParciales };
+  const opcionesOfrecidas = resolucion.necesitaAclaracion?.candidatos || null;
+  estado.pendiente = { intencion, slot, entidadesParciales, opcionesOfrecidas };
 }
 
 // ---------------------------------------------------------------------------
@@ -206,7 +225,7 @@ function procesarMensaje(estado, mensajeUsuario) {
     // respuesta al slot pendiente.
     const soloFallbackGenerico = candidatosNormales.length === 1 && candidatosNormales[0].señales.includes('verbo_consulta_generico');
     if (candidatosNormales.length === 0 || soloFallbackGenerico) {
-      const entidadesResueltas = construirEntidadesDesdePendiente(estado, entidadesDelTurno);
+      const entidadesResueltas = construirEntidadesDesdePendiente(estado, entidadesDelTurno, mensajeUsuario);
       const resolucion = resolverAmbiguedad([{ intencion: estado.pendiente.intencion, señales: ['continuacion'], confianza: 1 }], entidadesResueltas);
 
       if (resolucion.listas.length > 0) {
@@ -275,7 +294,10 @@ function finalizarTurno(estado, { resolucion, entidadesResueltas, huboCambioDeTe
     tono: respuesta.tono,
   });
 
-  return { respuesta, indicadorPensando, intenciones: resolucion.listas, entidadesResueltas };
+  // `resultados` se expone para que una UI pueda construir tarjetas-resumen estructuradas
+  // (Pedido/Proveedor/Estado/...) además del texto narrativo — el texto sigue siendo la
+  // fuente de verdad conversacional, esto es un complemento visual opcional.
+  return { respuesta, indicadorPensando, intenciones: resolucion.listas, entidadesResueltas, resultados };
 }
 
 export { inicializarMotor, procesarMensaje, crearSessionState };
