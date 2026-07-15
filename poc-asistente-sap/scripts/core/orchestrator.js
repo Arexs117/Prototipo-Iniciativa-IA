@@ -117,7 +117,13 @@ function ejecutarConsulta(intencion, entidadesResueltas) {
       const valoresMultiples = entidadesResueltas.numero_pedido?.valoresMultiples;
       if (valoresMultiples?.length > 1) {
         return {
-          comparacion: valoresMultiples.map((np) => ({ pedido: obtenerPedido(np), recepciones: obtenerRecepcionesPorPedido(np) })),
+          // Se incluye `llegada` (no solo pedido/recepciones) para que la comparación pueda
+          // decir "cuál llegó primero" con datos reales, en vez de solo listar estados.
+          comparacion: valoresMultiples.map((np) => ({
+            pedido: obtenerPedido(np),
+            recepciones: obtenerRecepcionesPorPedido(np),
+            llegada: obtenerLlegadaPorPedido(np),
+          })),
         };
       }
       const numeroPedido = valor('numero_pedido');
@@ -176,14 +182,16 @@ function ejecutarConsultas(listas, entidadesResueltas) {
  * tienda/proveedor/cedis aunque el usuario nunca los haya escrito — así "el proveedor de ese
  * pedido, ¿qué otros pedidos tiene?" puede resolver "proveedor" sin volver a preguntarlo.
  */
-function derivarEntidadesDeResultados(resultados) {
+function entidadesDesdePedido(pedido) {
   const derivadas = {};
-  const pedido = resultados.consultar_pedido?.pedido;
-  if (pedido) {
-    if (pedido.tienda) derivadas.tienda = pedido.tienda.codigo_tienda;
-    if (pedido.proveedor) derivadas.proveedor = pedido.proveedor.codigo_proveedor;
-    if (pedido.cedis) derivadas.cedis = pedido.cedis.codigo_cedis;
-  }
+  if (pedido?.tienda) derivadas.tienda = pedido.tienda.codigo_tienda;
+  if (pedido?.proveedor) derivadas.proveedor = pedido.proveedor.codigo_proveedor;
+  if (pedido?.cedis) derivadas.cedis = pedido.cedis.codigo_cedis;
+  return derivadas;
+}
+
+function derivarEntidadesDeResultados(resultados) {
+  const derivadas = entidadesDesdePedido(resultados.consultar_pedido?.pedido);
   const cita = resultados.consultar_cita;
   if (cita?.proveedor) derivadas.proveedor = derivadas.proveedor || cita.proveedor.codigo_proveedor;
   if (cita?.cedis) derivadas.cedis = derivadas.cedis || cita.cedis.codigo_cedis;
@@ -196,6 +204,22 @@ function fusionarEntidadesDerivadas(entidadesResueltas, derivadas) {
     if (!fusionadas[tipo]?.valor) fusionadas[tipo] = { valor, origen: 'derivado_de_datos' };
   }
   return fusionadas;
+}
+
+/**
+ * Consultas múltiples en un solo mensaje ("¿ya llegó el pedido 4500105 y cuánto inventario
+ * hay en la tienda?") necesitan que el número de pedido explícito de ESTE turno también
+ * resuelva tienda/proveedor/cedis para las intenciones hermanas del mismo mensaje — si no,
+ * consultar_inventario no tiene tienda, nunca queda "lista", y esa parte de la pregunta se
+ * descarta en silencio sin que el usuario sepa por qué. Se resuelve antes de evaluar
+ * ambigüedad, con el mismo dato que ya se cachea en memoria (sin costo real).
+ */
+function enriquecerConPedidoDelTurno(entidadesResueltas) {
+  const numeroPedido = entidadesResueltas.numero_pedido?.valor;
+  if (!numeroPedido) return entidadesResueltas;
+  const pedido = obtenerPedido(numeroPedido);
+  if (!pedido) return entidadesResueltas;
+  return fusionarEntidadesDerivadas(entidadesResueltas, entidadesDesdePedido(pedido));
 }
 
 // ---------------------------------------------------------------------------
@@ -248,7 +272,8 @@ function procesarMensaje(estado, mensajeUsuario) {
   const candidatosIntencion = clasificarIntenciones({ textoExpandido, textoOriginalNormalizado: textoCorregido, conceptos });
 
   // Paso 6: resolución de contexto (contexto activo / memoria de sesión).
-  const { entidadesResueltas, huboCambioDeTema } = resolverEntidadesConContexto(estado, entidadesDelTurno, textoCorregido);
+  const { entidadesResueltas: entidadesDelPaso6, huboCambioDeTema } = resolverEntidadesConContexto(estado, entidadesDelTurno, textoCorregido);
+  const entidadesResueltas = enriquecerConPedidoDelTurno(entidadesDelPaso6);
 
   // Paso 7: ambigüedad / confianza.
   const resolucion = resolverAmbiguedad(candidatosIntencion, entidadesResueltas);

@@ -11,7 +11,9 @@ const INTENCIONES = {
     slotsObligatorios: ['numero_pedido'],
     // Slot alternativo: si no hay número de pedido, tienda + proveedor permiten buscarlo.
     slotsAlternativos: [['tienda', 'proveedor']],
-    conceptosDisparadores: ['pedido', 'estado_pedido'],
+    // 'proveedor' se incluye para que preguntas sueltas de seguimiento como "¿quién era el
+    // proveedor?" (sin volver a decir "pedido") sigan resolviendo sobre el pedido en contexto.
+    conceptosDisparadores: ['pedido', 'estado_pedido', 'proveedor'],
   },
   consultar_llegada: {
     slotsObligatorios: ['numero_pedido'],

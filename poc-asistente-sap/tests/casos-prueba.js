@@ -217,7 +217,10 @@ const casosDePrueba = [
     turnos: [
       { mensaje: 'muestrame la oc 4500116', verificar: (r) => r.intenciones.includes('consultar_pedido') },
       { mensaje: 'ya llego?', verificar: (r) => r.intenciones.includes('consultar_llegada') },
-      { mensaje: 'quien era el proveedor?', verificar: (r) => incluye(r.respuesta.texto, 'Comercial Hermanos Soto') || r.intenciones.length >= 0 },
+      {
+        mensaje: 'quien era el proveedor?',
+        verificar: (r) => r.intenciones.includes('consultar_pedido') && incluye(r.respuesta.texto, 'Comercial Hermanos Soto'),
+      },
       { mensaje: 'tiene cita?', verificar: (r) => r.intenciones.includes('consultar_cita') && incluye(r.respuesta.texto, 'cumplida') },
       {
         mensaje: 'y como va el inventario?',
@@ -316,6 +319,135 @@ const casosDePrueba = [
       {
         mensaje: 'asdkjhasjkd qwerty',
         verificar: (r) => !/undefined|null|nan|\[object/i.test(r.respuesta.texto),
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // HITO 5 — escenario de memoria completo tal como lo especifica el hito
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Hito5: memoria conversacional completa (pedido→llegó→proveedor→cita→inventario→cambio→regreso)',
+    turnos: [
+      { mensaje: 'muéstrame el pedido 4500105', verificar: (r) => r.intenciones.includes('consultar_pedido') },
+      { mensaje: '¿ya llegó?', verificar: (r) => r.intenciones.includes('consultar_llegada') },
+      {
+        mensaje: '¿quién era el proveedor?',
+        verificar: (r) => r.intenciones.includes('consultar_pedido') && incluye(r.respuesta.texto, 'Alimentos San Miguel'),
+      },
+      { mensaje: '¿tiene cita?', verificar: (r) => r.intenciones.includes('consultar_cita') },
+      { mensaje: '¿y el inventario?', verificar: (r) => r.intenciones.includes('consultar_inventario') },
+      {
+        mensaje: 'cambiando de tema, ¿qué pedidos tiene la tienda satélite?',
+        verificar: (r) => r.intenciones.includes('buscar_pedidos_por_tienda'),
+      },
+      {
+        mensaje: 'y el pedido de hace rato, ¿cómo va?',
+        verificar: (r, estado) => estado.contextoActivo.entidades.numero_pedido === '4500105',
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // HITO 5 — consultas múltiples: nada se descarta en silencio
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Hito5: consulta múltiple llegada + inventario en un solo mensaje',
+    turnos: [
+      {
+        mensaje: '¿ya llegó el pedido 4500105 y cuánto inventario hay disponible en la tienda?',
+        verificar: (r) =>
+          r.intenciones.includes('consultar_llegada') &&
+          r.intenciones.includes('consultar_inventario') &&
+          incluye(r.respuesta.texto, 'inventario'),
+      },
+    ],
+  },
+  {
+    nombre: 'Hito5: "quién es el proveedor y cuándo tiene cita" en un solo mensaje',
+    turnos: [
+      { mensaje: 'muéstrame el pedido 4500108', verificar: (r) => r.intenciones.includes('consultar_pedido') },
+      {
+        mensaje: '¿quién es el proveedor y cuándo tiene cita?',
+        verificar: (r) =>
+          r.intenciones.includes('consultar_pedido') &&
+          r.intenciones.includes('consultar_cita') &&
+          incluye(r.respuesta.texto, 'Comercializadora Rivas'),
+      },
+    ],
+  },
+  {
+    nombre: 'Hito5: comparar pedidos indica proactivamente cuál llegó primero',
+    turnos: [
+      {
+        mensaje: 'compara el pedido 4500101 con el 4500117',
+        verificar: (r) =>
+          incluye(r.respuesta.texto, '4500101') &&
+          incluye(r.respuesta.texto, '4500117') &&
+          incluye(r.respuesta.texto, 'llegó primero'),
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // HITO 5 — errores con código explícito pero inexistente (antes daban
+  // una respuesta confusa pidiendo un dato distinto al mencionado)
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Hito5: proveedor con código explícito inexistente responde con honestidad',
+    turnos: [
+      {
+        mensaje: '¿qué pedidos tiene el proveedor P999?',
+        verificar: (r) => r.intenciones.includes('buscar_pedidos_por_proveedor') && incluye(r.respuesta.texto, 'no encontré'),
+      },
+    ],
+  },
+  {
+    nombre: 'Hito5: material con código explícito inexistente responde con honestidad',
+    turnos: [
+      {
+        mensaje: '¿cuánto inventario hay del material M999 en la tienda T001?',
+        verificar: (r) => r.intenciones.includes('consultar_inventario') && incluye(r.respuesta.texto, 'no tengo registro'),
+      },
+    ],
+  },
+  {
+    nombre: 'Hito5: pedido con formato válido pero código inexistente',
+    turnos: [
+      {
+        mensaje: 'cómo va el pedido 1234567',
+        verificar: (r) => r.intenciones.includes('consultar_pedido') && incluye(r.respuesta.texto, 'no encontré'),
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // HITO 5 — consultas sin ningún contexto previo (primera interacción)
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Hito5: preguntas sin contexto piden el dato correcto, no un fallback genérico',
+    turnos: [
+      { mensaje: '¿ya llegó?', verificar: (r) => r.respuesta.tono === 'dato_faltante' && incluye(r.respuesta.texto, 'número de pedido') },
+    ],
+  },
+  {
+    nombre: 'Hito5: pregunta suelta sin contexto ("¿tiene cita?") pide el dato correcto',
+    turnos: [
+      { mensaje: '¿tiene cita?', verificar: (r) => r.respuesta.tono === 'dato_faltante' && incluye(r.respuesta.texto, 'número de pedido') },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // HITO 5 — ambigüedad: nunca listas extensas (validado a escala en
+  // tests exploratorios; aquí se confirma el comportamiento con el
+  // dataset real, donde el cap de 4 opciones no debería ni activarse)
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Hito5: ambigüedad real sigue mostrando todas las opciones cuando son pocas',
+    turnos: [
+      {
+        mensaje: 'cuanto stock hay de cola en la tienda reforma',
+        verificar: (r) => r.respuesta.tono === 'aclaracion' && r.respuesta.opciones.length <= 4,
       },
     ],
   },

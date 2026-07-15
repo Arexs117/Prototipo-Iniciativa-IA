@@ -5,7 +5,12 @@
  * duración total se mantenga natural (nunca se siente instantáneo, pero tampoco eterno).
  */
 
-const DURACION_OBJETIVO_MS = 1000;
+// Duración proporcional al largo del texto (respuestas cortas se sienten ágiles en vez de
+// forzar el mismo segundo completo para todo), acotada para que una respuesta combinada muy
+// larga tampoco se sienta eterna en una demo con muchos turnos seguidos.
+const DURACION_MIN_MS = 280;
+const DURACION_MAX_MS = 900;
+const MS_POR_CARACTER = 5.5;
 const INTERVALO_PASO_MS = 18;
 
 function escribirProgresivamente(elemento, texto, { alTick, alTerminar } = {}) {
@@ -15,7 +20,8 @@ function escribirProgresivamente(elemento, texto, { alTick, alTerminar } = {}) {
   caret.setAttribute('aria-hidden', 'true');
   elemento.appendChild(caret);
 
-  const totalPasos = Math.max(1, Math.round(DURACION_OBJETIVO_MS / INTERVALO_PASO_MS));
+  const duracionObjetivoMs = Math.min(DURACION_MAX_MS, Math.max(DURACION_MIN_MS, texto.length * MS_POR_CARACTER));
+  const totalPasos = Math.max(1, Math.round(duracionObjetivoMs / INTERVALO_PASO_MS));
   const caracteresPorPaso = Math.max(1, Math.ceil(texto.length / totalPasos));
 
   let indice = 0;

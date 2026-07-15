@@ -40,7 +40,17 @@ function estadoLegible(estadoGeneral) {
 // Aclaración / dato faltante
 // ---------------------------------------------------------------------------
 
+// Con catálogos más grandes que el dataset de demo, una ambigüedad puede tener muchas más de
+// 2-3 coincidencias. "Evita listas extensas": por encima de este umbral no se listan todas,
+// se pide precisar en vez de mostrar una pared de opciones.
+const MAX_OPCIONES_ACLARACION = 4;
+
 function construirPreguntaAclaracion({ candidatos }) {
+  if (candidatos.length > MAX_OPCIONES_ACLARACION) {
+    const masProbables = candidatos.slice(0, 3);
+    const texto = `Encontré ${candidatos.length} coincidencias, demasiadas para listar aquí — ¿podrías darme un poco más de detalle? Podría ser ${unirNatural(masProbables.map((c) => c.nombre))}, entre otras.`;
+    return { texto, tono: 'aclaracion', opciones: masProbables };
+  }
   const nombres = candidatos.map((c) => c.nombre);
   const texto = `Encontré más de una coincidencia: ${unirNatural(nombres)}. ¿Podrías indicarme a cuál te refieres?`;
   return { texto, tono: 'aclaracion', opciones: candidatos };
@@ -60,7 +70,24 @@ function formatearComparacionPedidos(comparacion) {
     if (!pedido) return 'uno de los pedidos no lo encontré en el sistema';
     return `el ${pedido.numero_pedido} está ${estadoLegible(pedido.estado_general)}`;
   });
-  return `Comparando ambos pedidos: ${partes.join('; ')}.`;
+  let texto = `Comparando ambos pedidos: ${partes.join('; ')}.`;
+
+  // "Cuál llegó primero" se responde aquí mismo, de una vez — no hace falta que el usuario
+  // lo pregunte por separado, y evita depender de reconocer esa frase como seguimiento.
+  const conFechaLlegada = comparacion
+    .filter((c) => c.pedido && c.llegada?.fecha_recibo_tienda)
+    .map((c) => ({ numero: c.pedido.numero_pedido, fecha: new Date(c.llegada.fecha_recibo_tienda) }));
+
+  if (conFechaLlegada.length === comparacion.length && comparacion.length > 1) {
+    conFechaLlegada.sort((a, b) => a.fecha - b.fecha);
+    const [primero] = conFechaLlegada;
+    texto += ` El que llegó primero a tienda fue el ${primero.numero}, el ${formatearFecha(primero.fecha)}.`;
+  } else if (conFechaLlegada.length > 0 && conFechaLlegada.length < comparacion.length) {
+    const pendientes = comparacion.filter((c) => c.pedido && !c.llegada?.fecha_recibo_tienda).map((c) => c.pedido.numero_pedido);
+    texto += ` El que llegó primero fue el ${conFechaLlegada[0].numero} (${formatearFecha(conFechaLlegada[0].fecha)}); ${pendientes.join(', ')} todavía no ha llegado.`;
+  }
+
+  return texto;
 }
 
 function formatearConsultarPedido({ pedido, recepciones, pedidosMultiples, etiqueta, comparacion }) {

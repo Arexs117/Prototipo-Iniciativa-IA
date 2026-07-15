@@ -26,8 +26,13 @@ function evaluarIntencion(candidato, entidadesResueltas) {
   const definicion = INTENCIONES[intencion];
   const estados = definicion.slotsObligatorios.map((slot) => ({ slot, estado: estadoDeSlot(entidadesResueltas, slot) }));
   const obligatoriosListos = estados.every((s) => s.estado === 'resuelto');
+  const hayAmbiguedadObligatoria = estados.some((s) => s.estado === 'ambiguo');
 
-  const algunAlternativoListo = definicion.slotsAlternativos.some((combo) =>
+  // Un slot alternativo (p. ej. "solo tienda" para consultar_inventario) nunca debe tapar una
+  // ambigüedad real en un slot obligatorio: si el usuario dijo "cola" y hay dos coincidencias,
+  // no hay que responder con el inventario completo de la tienda solo porque esa sí es clara
+  // — hay que preguntar primero por la ambigüedad de "cola".
+  const algunAlternativoListo = !hayAmbiguedadObligatoria && definicion.slotsAlternativos.some((combo) =>
     combo.every((slot) => estadoDeSlot(entidadesResueltas, slot) === 'resuelto')
   );
 
@@ -37,6 +42,7 @@ function evaluarIntencion(candidato, entidadesResueltas) {
     ambiguos: estados.filter((s) => s.estado === 'ambiguo').map((s) => s.slot),
     faltantes: estados.filter((s) => s.estado === 'faltante').map((s) => s.slot),
     prefiereListado: Boolean(candidato.prefiereListado),
+    señales: candidato.señales || [],
   };
 }
 
@@ -103,12 +109,20 @@ function resolverAmbiguedad(candidatosIntencion, entidadesResueltas) {
     };
   }
 
-  const conFaltante = todas.find((e) => e.faltantes.length > 0);
+  // Al elegir qué dato pedir, se prioriza el que el propio usuario mencionó como concepto
+  // este turno (p. ej. escribió "proveedor" pero el código no existe) sobre el orden interno
+  // de las intenciones — así "¿qué pedidos tiene el proveedor XYZ?" con un código inválido
+  // pregunta por el proveedor, no por un dato que el usuario nunca mencionó (la tienda).
+  const conceptosMencionados = new Set(todas.flatMap((e) => e.señales));
+  const conFaltante =
+    todas.find((e) => e.faltantes.some((slot) => conceptosMencionados.has(slot))) ||
+    todas.find((e) => e.faltantes.length > 0);
   if (conFaltante) {
+    const slot = conFaltante.faltantes.find((s) => conceptosMencionados.has(s)) || conFaltante.faltantes[0];
     return {
       listas: [],
       necesitaAclaracion: null,
-      necesitaDatoFaltante: { intencion: conFaltante.intencion, slot: conFaltante.faltantes[0] },
+      necesitaDatoFaltante: { intencion: conFaltante.intencion, slot },
     };
   }
 

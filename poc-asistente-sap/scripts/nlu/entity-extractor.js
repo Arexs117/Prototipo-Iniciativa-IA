@@ -12,10 +12,6 @@
 
 import { normalizar } from '../shared/text-utils.js';
 import {
-  obtenerTienda,
-  obtenerProveedor,
-  obtenerCedis,
-  obtenerMaterial,
   buscarTiendaPorNombreAproximado,
   buscarMaterialPorNombreAproximado,
   buscarProveedorPorNombreAproximado,
@@ -53,22 +49,26 @@ function extraerNumerosPedido(textoOriginalNormalizado) {
   return [...new Set(coincidencias)].map((codigo) => ({ codigo, score: 1, origen: 'codigo_explicito' }));
 }
 
+/**
+ * Reconoce códigos con el FORMATO de tienda/proveedor/cedis/material (p. ej. "P999") aunque
+ * no existan en el catálogo. Antes se descartaban en silencio si no existían, lo que hacía
+ * que el motor ignorara por completo lo que el usuario escribió y terminara pidiendo un dato
+ * distinto ("necesito la tienda") en vez de responder honestamente "no encontré el proveedor
+ * P999" — la capa de datos (sap-connector) ya sabe devolver ese "sin resultados" con gracia;
+ * aquí solo hace falta no destruir la mención explícita del usuario antes de llegar ahí.
+ */
 function extraerCodigosDirectos(tokens) {
   const codigos = { tienda: [], proveedor: [], cedis: [], material: [] };
 
   for (const token of tokens) {
     if (PATRON_CODIGO_TIENDA.test(token)) {
-      const codigo = token.toUpperCase();
-      if (obtenerTienda(codigo)) codigos.tienda.push({ codigo, score: 1, origen: 'codigo_explicito' });
+      codigos.tienda.push({ codigo: token.toUpperCase(), score: 1, origen: 'codigo_explicito' });
     } else if (PATRON_CODIGO_PROVEEDOR.test(token)) {
-      const codigo = token.toUpperCase();
-      if (obtenerProveedor(codigo)) codigos.proveedor.push({ codigo, score: 1, origen: 'codigo_explicito' });
+      codigos.proveedor.push({ codigo: token.toUpperCase(), score: 1, origen: 'codigo_explicito' });
     } else if (PATRON_CODIGO_CEDIS.test(token)) {
-      const codigo = token.toUpperCase();
-      if (obtenerCedis(codigo)) codigos.cedis.push({ codigo, score: 1, origen: 'codigo_explicito' });
+      codigos.cedis.push({ codigo: token.toUpperCase(), score: 1, origen: 'codigo_explicito' });
     } else if (PATRON_CODIGO_MATERIAL.test(token)) {
-      const codigo = token.toUpperCase();
-      if (obtenerMaterial(codigo)) codigos.material.push({ codigo, score: 1, origen: 'codigo_explicito' });
+      codigos.material.push({ codigo: token.toUpperCase(), score: 1, origen: 'codigo_explicito' });
     }
   }
   return codigos;
