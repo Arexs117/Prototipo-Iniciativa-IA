@@ -451,6 +451,92 @@ const casosDePrueba = [
       },
     ],
   },
+
+  // ---------------------------------------------------------------------
+  // Robustez de inventario: tienda y material VÁLIDOS pero sin fila para esa
+  // combinación puntual (T001/M002 no aparece en el dataset de demo) — antes
+  // se respondía con un genérico "no existe esa relación" indistinguible del
+  // caso de tienda/material inexistentes, lo cual desinformaba cuando ambos sí
+  // existían en el catálogo. Ahora se explica con precisión y se ofrece el
+  // listado completo de la tienda para comparar.
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Robustez: combinación tienda+material válida sin fila de inventario',
+    turnos: [
+      {
+        mensaje: 'cuánto inventario hay del material m002 en la tienda t001',
+        verificar: (r) =>
+          r.intenciones.includes('consultar_inventario') &&
+          incluye(r.respuesta.texto, 'no tengo registro de inventario') &&
+          !incluye(r.respuesta.texto, 'esa combinación de tienda y material'),
+      },
+    ],
+  },
+  {
+    nombre: 'Robustez: material inexistente en catálogo distingue el motivo (no "sin registro" genérico)',
+    turnos: [
+      {
+        mensaje: 'cuánto inventario hay del material m999 en la tienda t001',
+        verificar: (r) => incluye(r.respuesta.texto, 'no tengo registro de ese material'),
+      },
+    ],
+  },
+  {
+    nombre: 'Robustez: tienda inexistente en catálogo distingue el motivo',
+    turnos: [
+      {
+        mensaje: 'cuánto inventario hay del material m001 en la tienda t999',
+        verificar: (r) => incluye(r.respuesta.texto, 'no tengo registro de esa tienda'),
+      },
+    ],
+  },
+
+  // ---------------------------------------------------------------------
+  // Confirmación de sugerencias proactivas: antes un "sí"/"no" a la propia
+  // pregunta del asistente ("¿quieres que revise si ya tiene cita?") llegaba
+  // como mensaje nuevo, sin entidades reconocibles, y el motor respondía con
+  // el fallback genérico de "no entendí" — justo cuando el usuario aceptaba
+  // lo que se le ofrecía.
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Confirmación: aceptar sugerencia de revisar cita ejecuta consultar_cita',
+    turnos: [
+      {
+        mensaje: 'muestrame el pedido 4500109',
+        verificar: (r) => incluye(r.respuesta.texto, 'cita de entrega agendada'),
+      },
+      {
+        mensaje: 'sí',
+        verificar: (r) => r.intenciones.includes('consultar_cita') && !incluye(r.respuesta.texto, 'no logré entender'),
+      },
+    ],
+  },
+  {
+    nombre: 'Confirmación: declinar una sugerencia responde con cierre breve, no con fallback',
+    turnos: [
+      {
+        mensaje: 'muestrame el pedido 4500110',
+        verificar: (r) => incluye(r.respuesta.texto, 'cita de entrega agendada'),
+      },
+      {
+        mensaje: 'no',
+        verificar: (r) => r.respuesta.tono === 'confirmacion' && !incluye(r.respuesta.texto, 'no logré entender'),
+      },
+      {
+        mensaje: 'y el pedido 4500111 como va',
+        verificar: (r) => r.intenciones.includes('consultar_pedido') && incluye(r.respuesta.texto, '4500111'),
+      },
+    ],
+  },
+  {
+    nombre: 'Confirmación: un "sí" suelto sin sugerencia pendiente no rompe el motor',
+    turnos: [
+      {
+        mensaje: 'sí',
+        verificar: (r) => !/undefined|null|nan|\[object/i.test(r.respuesta.texto),
+      },
+    ],
+  },
 ];
 
 export { casosDePrueba };

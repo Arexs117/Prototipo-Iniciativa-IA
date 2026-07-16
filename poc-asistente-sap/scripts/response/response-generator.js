@@ -7,7 +7,7 @@
  * frase conversacional.
  */
 
-import { formatearFecha, elegirAlAzar, CONECTORES } from './templates.js';
+import { formatearFecha, elegirAlAzar, CONECTORES, FRASES_DECLINAR_SUGERENCIA } from './templates.js';
 
 const NOMBRE_SLOT = {
   numero_pedido: 'el número de pedido',
@@ -179,15 +179,30 @@ function formatearFilaInventario(fila) {
   return `${texto}.`;
 }
 
+/**
+ * Antes se devolvía un genérico "no existe esa combinación" en cuanto no había fila de
+ * inventario, aunque tienda y material sí existieran en el catálogo por separado — un usuario
+ * que consultaba un material real en una tienda real leía "no se tiene relación" y perdía
+ * confianza en el motor. Ahora se distinguen los tres casos reales por separado, para nunca
+ * negar la existencia de algo que sí existe: (1) la tienda no se reconoce, (2) el material no
+ * se reconoce, (3) ambos existen pero esa combinación puntual no tiene fila registrada (el
+ * material simplemente no se maneja en esa tienda, o el catálogo de inventario está incompleto).
+ */
 function formatearConsultarInventario(resultado) {
-  if (resultado === null) {
-    return 'No tengo registro de inventario para esa combinación de tienda y material.';
-  }
   if (Array.isArray(resultado)) {
     if (resultado.length === 0) return 'No encontré inventario registrado para esa tienda.';
     return `Así está el inventario de la tienda: ${resultado.map(formatearFilaInventario).join(' ')}`;
   }
-  return formatearFilaInventario(resultado);
+  if (resultado?.fila) {
+    return formatearFilaInventario(resultado.fila);
+  }
+  if (!resultado?.tienda) {
+    return 'No tengo registro de esa tienda en el catálogo — ¿me confirmas el nombre o código?';
+  }
+  if (!resultado?.material) {
+    return 'No tengo registro de ese material en el catálogo — ¿me confirmas el nombre o código?';
+  }
+  return `No tengo registro de inventario de ${resultado.material.descripcion ?? 'ese material'} para ${resultado.tienda.nombre ?? 'esa tienda'} — puede que no se maneje en esa tienda o que el catálogo no esté actualizado.`;
 }
 
 function formatearBuscarPedidos(pedidos, etiquetaFiltro) {
@@ -236,7 +251,9 @@ function unirSecciones(secciones) {
 /**
  * @param {object} resolucion - salida de ambiguity-resolver.resolverAmbiguedad
  * @param {object} resultados - mapa intencion -> datos ya consultados por el orquestador
- * @param {string[]} sugerencias - frases opcionales de suggestion-engine.js (se anexan al final)
+ * @param {object[]} sugerencias - objetos { texto, intencionConfirmacion, ... } de
+ *   suggestion-engine.js (se anexa el texto al final; ver orchestrator.js para cómo se procesa
+ *   una eventual confirmación del usuario en el turno siguiente)
  */
 function generarRespuesta({ resolucion, resultados, sugerencias = [] }) {
   if (resolucion.necesitaAclaracion) {
@@ -256,10 +273,24 @@ function generarRespuesta({ resolucion, resultados, sugerencias = [] }) {
   let texto = unirSecciones(secciones);
 
   if (sugerencias.length > 0) {
-    texto += ` ${sugerencias.join(' ')}`;
+    texto += ` ${sugerencias.map((s) => s.texto).join(' ')}`;
   }
 
   return { texto: texto.trim(), tono: 'respuesta' };
 }
 
-export { generarRespuesta };
+/** El usuario declinó ("no") una sugerencia proactiva — cierre breve, sin reabrir el tema. */
+function generarRespuestaSugerenciaDeclinada() {
+  return { texto: elegirAlAzar(FRASES_DECLINAR_SUGERENCIA), tono: 'confirmacion' };
+}
+
+/**
+ * El usuario aceptó ("sí") una sugerencia que no se puede ejecutar solo con esa confirmación
+ * (p. ej. faltaba saber cuál pedido). En vez de responder con el fallback genérico de "no
+ * entendí", se le hace la pregunta puntual que realmente falta.
+ */
+function generarRespuestaSugerenciaSinIntencion(preguntaSeguimiento) {
+  return { texto: preguntaSeguimiento || 'Claro, ¿podrías darme un poco más de detalle?', tono: 'dato_faltante' };
+}
+
+export { generarRespuesta, generarRespuestaSugerenciaDeclinada, generarRespuestaSugerenciaSinIntencion };

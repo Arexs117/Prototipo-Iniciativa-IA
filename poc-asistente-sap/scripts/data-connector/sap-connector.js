@@ -13,28 +13,48 @@ import { coincidenciaAproximada } from '../shared/text-utils.js';
 
 const UMBRAL_COINCIDENCIA = 0.72;
 
+/**
+ * El Excel de demo se edita a mano entre hitos (agregar filas, corregir datos) y SheetJS puede
+ * devolver el mismo código de negocio con distinta forma según cómo haya quedado la celda:
+ * " T001" con espacio colgante, "t001" en minúscula, o un número de pedido leído como Number en
+ * vez de string si alguien le quitó el formato de texto a la columna. Cualquiera de esas
+ * variaciones rompía silenciosamente una comparación estricta (===) en un find/filter — el
+ * registro SÍ existe, pero el motor respondía "no encontré" o "no tengo relación" porque el
+ * código no calzaba carácter por carácter. Normalizar en el punto de comparación blinda todos
+ * los lookups de catálogo contra esa clase de inconsistencia de datos, sin tener que depurar
+ * fila por fila cada vez que ocurre.
+ */
+function normalizarCodigo(codigo) {
+  if (codigo === null || codigo === undefined) return '';
+  return codigo.toString().trim().toUpperCase();
+}
+
 // ---------------------------------------------------------------------------
 // Catálogos maestros
 // ---------------------------------------------------------------------------
 
 function obtenerProveedor(codigoProveedor) {
   const { proveedores } = obtenerDatosCacheados();
-  return proveedores.find((p) => p.codigo_proveedor === codigoProveedor) ?? null;
+  const buscado = normalizarCodigo(codigoProveedor);
+  return proveedores.find((p) => normalizarCodigo(p.codigo_proveedor) === buscado) ?? null;
 }
 
 function obtenerCedis(codigoCedis) {
   const { cedis } = obtenerDatosCacheados();
-  return cedis.find((c) => c.codigo_cedis === codigoCedis) ?? null;
+  const buscado = normalizarCodigo(codigoCedis);
+  return cedis.find((c) => normalizarCodigo(c.codigo_cedis) === buscado) ?? null;
 }
 
 function obtenerTienda(codigoTienda) {
   const { tiendas } = obtenerDatosCacheados();
-  return tiendas.find((t) => t.codigo_tienda === codigoTienda) ?? null;
+  const buscado = normalizarCodigo(codigoTienda);
+  return tiendas.find((t) => normalizarCodigo(t.codigo_tienda) === buscado) ?? null;
 }
 
 function obtenerMaterial(codigoMaterial) {
   const { materiales } = obtenerDatosCacheados();
-  return materiales.find((m) => m.codigo_material === codigoMaterial) ?? null;
+  const buscado = normalizarCodigo(codigoMaterial);
+  return materiales.find((m) => normalizarCodigo(m.codigo_material) === buscado) ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,8 +63,9 @@ function obtenerMaterial(codigoMaterial) {
 
 function construirPosicionesPedido(numeroPedido) {
   const { pedidoPosiciones } = obtenerDatosCacheados();
+  const buscado = normalizarCodigo(numeroPedido);
   return pedidoPosiciones
-    .filter((pos) => pos.numero_pedido === numeroPedido)
+    .filter((pos) => normalizarCodigo(pos.numero_pedido) === buscado)
     .sort((a, b) => a.posicion - b.posicion)
     .map((pos) => ({
       posicion: pos.posicion,
@@ -56,7 +77,8 @@ function construirPosicionesPedido(numeroPedido) {
 /** Devuelve el pedido enriquecido con proveedor, tienda, cedis y sus posiciones. null si no existe. */
 function obtenerPedido(numeroPedido) {
   const { pedidos } = obtenerDatosCacheados();
-  const pedido = pedidos.find((p) => p.numero_pedido === numeroPedido);
+  const buscado = normalizarCodigo(numeroPedido);
+  const pedido = pedidos.find((p) => normalizarCodigo(p.numero_pedido) === buscado);
   if (!pedido) return null;
 
   return {
@@ -72,15 +94,17 @@ function obtenerPedido(numeroPedido) {
 
 function buscarPedidosPorTienda(codigoTienda) {
   const { pedidos } = obtenerDatosCacheados();
+  const buscado = normalizarCodigo(codigoTienda);
   return pedidos
-    .filter((p) => p.codigo_tienda === codigoTienda)
+    .filter((p) => normalizarCodigo(p.codigo_tienda) === buscado)
     .map((p) => obtenerPedido(p.numero_pedido));
 }
 
 function buscarPedidosPorProveedor(codigoProveedor) {
   const { pedidos } = obtenerDatosCacheados();
+  const buscado = normalizarCodigo(codigoProveedor);
   return pedidos
-    .filter((p) => p.codigo_proveedor === codigoProveedor)
+    .filter((p) => normalizarCodigo(p.codigo_proveedor) === buscado)
     .map((p) => obtenerPedido(p.numero_pedido));
 }
 
@@ -90,8 +114,9 @@ function buscarPedidosPorProveedor(codigoProveedor) {
 
 function obtenerRecepcionesPorPedido(numeroPedido) {
   const { recepciones } = obtenerDatosCacheados();
+  const buscado = normalizarCodigo(numeroPedido);
   return recepciones
-    .filter((r) => r.numero_pedido === numeroPedido)
+    .filter((r) => normalizarCodigo(r.numero_pedido) === buscado)
     .sort((a, b) => a.posicion - b.posicion)
     .map((r) => ({
       posicion: r.posicion,
@@ -106,7 +131,8 @@ function obtenerRecepcionesPorPedido(numeroPedido) {
 /** 1 registro logístico por pedido (CEDIS -> Tienda). null si el pedido no existe. */
 function obtenerLlegadaPorPedido(numeroPedido) {
   const { llegadas } = obtenerDatosCacheados();
-  return llegadas.find((l) => l.numero_pedido === numeroPedido) ?? null;
+  const buscado = normalizarCodigo(numeroPedido);
+  return llegadas.find((l) => normalizarCodigo(l.numero_pedido) === buscado) ?? null;
 }
 
 /**
@@ -115,7 +141,8 @@ function obtenerLlegadaPorPedido(numeroPedido) {
  */
 function obtenerCitaPorPedido(numeroPedido) {
   const { citas } = obtenerDatosCacheados();
-  const cita = citas.find((c) => c.numero_pedido === numeroPedido);
+  const buscado = normalizarCodigo(numeroPedido);
+  const cita = citas.find((c) => normalizarCodigo(c.numero_pedido) === buscado);
   if (!cita) return null;
 
   return {
@@ -134,28 +161,48 @@ function obtenerCitaPorPedido(numeroPedido) {
 // Inventario
 // ---------------------------------------------------------------------------
 
-/** Combinación tienda+material puntual. null si no existe esa combinación en el dataset. */
+/**
+ * Combinación tienda+material puntual. Siempre devuelve un objeto (nunca un `null` plano),
+ * con `tienda` y `material` resueltos por separado del catálogo aunque no haya fila de
+ * inventario — así response-generator.js puede explicar CON PRECISIÓN por qué no hay dato
+ * (¿la tienda no se reconoce? ¿el material no se reconoce? ¿ambos existen pero simplemente no
+ * hay fila para esa combinación?) en vez de un genérico "no existe esa relación" que resultaba
+ * engañoso cuando tienda y material sí eran válidos por separado.
+ */
 function obtenerInventarioPorTiendaYMaterial(codigoTienda, codigoMaterial) {
   const { inventario } = obtenerDatosCacheados();
+  const tiendaBuscada = normalizarCodigo(codigoTienda);
+  const materialBuscado = normalizarCodigo(codigoMaterial);
   const fila = inventario.find(
-    (i) => i.codigo_tienda === codigoTienda && i.codigo_material === codigoMaterial
+    (i) => normalizarCodigo(i.codigo_tienda) === tiendaBuscada && normalizarCodigo(i.codigo_material) === materialBuscado
   );
-  if (!fila) return null;
+
+  const tienda = obtenerTienda(codigoTienda);
+  const material = obtenerMaterial(codigoMaterial);
+
+  if (!fila) {
+    return { fila: null, tienda, material };
+  }
 
   return {
-    tienda: obtenerTienda(fila.codigo_tienda),
-    material: obtenerMaterial(fila.codigo_material),
-    inventario_disponible: fila.inventario_disponible,
-    inventario_transito: fila.inventario_transito,
-    faltante: fila.faltante,
+    fila: {
+      tienda: obtenerTienda(fila.codigo_tienda),
+      material: obtenerMaterial(fila.codigo_material),
+      inventario_disponible: fila.inventario_disponible,
+      inventario_transito: fila.inventario_transito,
+      faltante: fila.faltante,
+    },
+    tienda,
+    material,
   };
 }
 
 /** Lista completa de inventario de una tienda (slot alternativo de consultar_inventario). */
 function obtenerInventarioPorTienda(codigoTienda) {
   const { inventario } = obtenerDatosCacheados();
+  const buscado = normalizarCodigo(codigoTienda);
   return inventario
-    .filter((i) => i.codigo_tienda === codigoTienda)
+    .filter((i) => normalizarCodigo(i.codigo_tienda) === buscado)
     .map((i) => ({
       tienda: obtenerTienda(i.codigo_tienda),
       material: obtenerMaterial(i.codigo_material),

@@ -33,4 +33,18 @@ const FRASES_SIN_DATO = [
   'No encuentro esa información todavía.',
 ];
 
-export { formatearFecha, elegirAlAzar, APERTURAS_PEDIDO, CONECTORES, FRASES_SIN_DATO };
+// Respuesta cuando el usuario declina una sugerencia proactiva ("¿quieres que revise...?" -> "no").
+const FRASES_DECLINAR_SUGERENCIA = [
+  'Entendido, aquí quedo si necesitas algo más.',
+  'Perfecto, seguimos si te surge otra duda.',
+  'De acuerdo, cualquier otra cosa me avisas.',
+];
+
+export {
+  formatearFecha,
+  elegirAlAzar,
+  APERTURAS_PEDIDO,
+  CONECTORES,
+  FRASES_SIN_DATO,
+  FRASES_DECLINAR_SUGERENCIA,
+};

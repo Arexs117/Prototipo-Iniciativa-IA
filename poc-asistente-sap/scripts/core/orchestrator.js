@@ -28,6 +28,7 @@ import { expandirAbreviaciones } from '../nlu/abbreviations.js';
 import { clasificarIntenciones } from '../nlu/intent-classifier.js';
 import { extraerEntidades } from '../nlu/entity-extractor.js';
 import { resolverAmbiguedad } from '../nlu/ambiguity-resolver.js';
+import { detectarConfirmacion } from '../nlu/confirmation-detector.js';
 import { normalizar } from '../shared/text-utils.js';
 
 import {
@@ -40,7 +41,11 @@ import {
   TIPOS_ENTIDAD,
 } from './session-state.js';
 
-import { generarRespuesta } from '../response/response-generator.js';
+import {
+  generarRespuesta,
+  generarRespuestaSugerenciaDeclinada,
+  generarRespuestaSugerenciaSinIntencion,
+} from '../response/response-generator.js';
 import { generarSugerencias } from '../response/suggestion-engine.js';
 import { crearIndicadorPensando } from '../response/thinking-simulator.js';
 
@@ -103,6 +108,64 @@ function guardarPendiente(estado, intencion, resolucion, entidadesResueltas) {
   const slot = resolucion.necesitaAclaracion?.slot || resolucion.necesitaDatoFaltante?.slot;
   const opcionesOfrecidas = resolucion.necesitaAclaracion?.candidatos || null;
   estado.pendiente = { intencion, slot, entidadesParciales, opcionesOfrecidas };
+}
+
+// ---------------------------------------------------------------------------
+// Confirmación de una sugerencia proactiva ("¿quieres que revise si tiene cita?" -> "sí")
+// ---------------------------------------------------------------------------
+
+/**
+ * Una sugerencia proactiva (suggestion-engine.js) es, en el fondo, una pregunta de sí/no que el
+ * propio asistente hizo. Antes no quedaba registro de ESA pregunta en la sesión, así que un
+ * "sí" del usuario llegaba al turno siguiente como un mensaje nuevo, sin entidades reconocibles
+ * y sin intención clasificable — el motor respondía con el fallback genérico de "no entendí tu
+ * solicitud" justo cuando el usuario estaba aceptando lo que se le acababa de ofrecer. Esta
+ * función resuelve esa confirmación usando el contexto/memoria ya vigente (el pedido, tienda,
+ * etc. de la respuesta anterior siguen activos, así que no hace falta que el usuario los repita).
+ *
+ * @returns el resultado de turno ya finalizado, o null si el mensaje no fue una confirmación
+ *   clara (en ese caso el llamador debe seguir el flujo normal, tratándolo como mensaje nuevo).
+ */
+function manejarConfirmacionSugerencia(estado, mensajeUsuario, textoNormalizado, indicadorPensando) {
+  const sugerencia = estado.sugerenciaPendiente;
+  estado.sugerenciaPendiente = null; // se consume: nunca sigue vigente más de un turno
+
+  const confirmacion = detectarConfirmacion(mensajeUsuario);
+  if (!confirmacion) return null;
+
+  if (confirmacion === 'negativa') {
+    const respuesta = generarRespuestaSugerenciaDeclinada();
+    registrarTurno(estado, { mensajeUsuario, textoNormalizado, intencionesDetectadas: [], tono: respuesta.tono });
+    return { respuesta, indicadorPensando, intenciones: [], entidadesResueltas: {}, resultados: {} };
+  }
+
+  // Afirmativa, pero la sugerencia no se puede ejecutar solo con un "sí" (p. ej. faltaba saber
+  // cuál pedido en particular): se pregunta puntualmente lo que falta, sin fallback genérico.
+  if (!sugerencia.intencionConfirmacion) {
+    const respuesta = generarRespuestaSugerenciaSinIntencion(sugerencia.preguntaSeguimiento);
+    registrarTurno(estado, { mensajeUsuario, textoNormalizado, intencionesDetectadas: [], tono: respuesta.tono });
+    return { respuesta, indicadorPensando, intenciones: [], entidadesResueltas: {}, resultados: {} };
+  }
+
+  const { entidadesResueltas: base } = resolverEntidadesConContexto(estado, {}, textoNormalizado);
+  let entidadesResueltas = enriquecerConPedidoDelTurno(base);
+  if (sugerencia.evitarSlot) {
+    // Reintentar consultar_inventario sin el material forzado (para que caiga al slot
+    // alternativo "solo tienda" y muestre el listado completo, en vez de repetir el mismo
+    // resultado vacío que originó la sugerencia).
+    entidadesResueltas = { ...entidadesResueltas, [sugerencia.evitarSlot]: { valor: null, origen: 'sin_resolver' } };
+  }
+
+  const resolucion = resolverAmbiguedad(
+    [{ intencion: sugerencia.intencionConfirmacion, señales: ['continuacion_sugerencia'], confianza: 1 }],
+    entidadesResueltas
+  );
+
+  if (resolucion.listas.length === 0 && (resolucion.necesitaAclaracion || resolucion.necesitaDatoFaltante)) {
+    guardarPendiente(estado, sugerencia.intencionConfirmacion, resolucion, entidadesResueltas);
+  }
+
+  return finalizarTurno(estado, { resolucion, entidadesResueltas, textoNormalizado, mensajeUsuario, indicadorPensando });
 }
 
 // ---------------------------------------------------------------------------
@@ -263,6 +326,14 @@ function procesarMensaje(estado, mensajeUsuario) {
     estado.pendiente = null;
   }
 
+  // Confirmación (o rechazo) de una sugerencia proactiva del turno anterior ("¿quieres que
+  // revise si tiene cita?" -> "sí"). Si el mensaje no es un sí/no claro, se sigue el flujo
+  // normal como si fuera un mensaje nuevo (la sugerencia ya quedó consumida/descartada).
+  if (estado.sugerenciaPendiente) {
+    const resultadoConfirmacion = manejarConfirmacionSugerencia(estado, mensajeUsuario, textoCorregido, indicadorPensando);
+    if (resultadoConfirmacion) return resultadoConfirmacion;
+  }
+
   // "El pedido de hace rato": restaura el contexto archivado más reciente antes de resolver.
   if (esReferenciaAContextoAnterior(textoCorregido)) {
     restaurarContextoAnterior(estado);
@@ -296,8 +367,18 @@ function finalizarTurno(estado, { resolucion, entidadesResueltas, huboCambioDeTe
   // Paso 8: consulta de datos (solo para las intenciones que sí están listas).
   const resultados = ejecutarConsultas(resolucion.listas, entidadesResueltas);
 
-  // Motor de sugerencias (proactivo, opcional).
+  // Motor de sugerencias (proactivo, opcional). Se recuerda cuál fue la última sugerencia (si
+  // hubo alguna) para poder interpretar un "sí"/"no" del usuario en el turno siguiente — ver
+  // manejarConfirmacionSugerencia(). Si este turno no generó sugerencia, se limpia cualquier
+  // rastro de una anterior: ya no aplica confirmarla fuera de contexto.
   const sugerencias = generarSugerencias({ listas: resolucion.listas, resultados });
+  estado.sugerenciaPendiente = sugerencias.length > 0
+    ? {
+        intencionConfirmacion: sugerencias[0].intencionConfirmacion,
+        preguntaSeguimiento: sugerencias[0].preguntaSeguimiento,
+        evitarSlot: sugerencias[0].evitarSlot,
+      }
+    : null;
 
   // Paso 9: generación de respuesta natural.
   const respuesta = generarRespuesta({ resolucion, resultados, sugerencias });
