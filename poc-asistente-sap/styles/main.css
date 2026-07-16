@@ -1,0 +1,37 @@
+@import "./base/tokens.css";
+@import "./base/reset.css";
+@import "./themes/teams-dark.css";
+@import "./components/header.css";
+@import "./components/connection-status.css";
+@import "./components/chat-bubble.css";
+@import "./components/typing-indicator.css";
+@import "./components/input-bar.css";
+@import "./components/suggestion-cards.css";
+@import "./components/summary-card.css";
+@import "./components/clarification-chips.css";
+@import "./components/file-protocol-warning.css";
+
+.app-shell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

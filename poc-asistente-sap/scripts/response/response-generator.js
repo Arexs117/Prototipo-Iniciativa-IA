@@ -1,0 +1,296 @@
+/**
+ * response/response-generator.js
+ * Paso 9 del pipeline: convierte resultados de datos (o la falta de ellos) en lenguaje
+ * natural. Si hay varias intenciones resueltas en el mismo turno, las integra en una sola
+ * respuesta narrativa (no una lista de respuestas separadas). Nunca expone mecanismos
+ * internos (reglas, nombres de archivo, stack traces) — todo error se convierte en una
+ * frase conversacional.
+ */
+
+import { formatearFecha, elegirAlAzar, CONECTORES, FRASES_DECLINAR_SUGERENCIA } from './templates.js';
+
+const NOMBRE_SLOT = {
+  numero_pedido: 'el número de pedido',
+  tienda: 'la tienda',
+  proveedor: 'el proveedor',
+  material: 'el material',
+  cedis: 'el CEDIS',
+};
+
+function unirNatural(nombres) {
+  if (nombres.length === 0) return '';
+  if (nombres.length === 1) return nombres[0];
+  return `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`;
+}
+
+function minusculaInicial(texto) {
+  return texto.charAt(0).toLowerCase() + texto.slice(1);
+}
+
+function estadoLegible(estadoGeneral) {
+  const mapa = {
+    Abierto: 'abierto (aún sin recepción)',
+    Parcial: 'parcial (recepción incompleta)',
+    Cerrado: 'cerrado (recepción completa)',
+  };
+  return mapa[estadoGeneral] || estadoGeneral?.toLowerCase() || 'sin estado registrado';
+}
+
+// ---------------------------------------------------------------------------
+// Aclaración / dato faltante
+// ---------------------------------------------------------------------------
+
+// Con catálogos más grandes que el dataset de demo, una ambigüedad puede tener muchas más de
+// 2-3 coincidencias. "Evita listas extensas": por encima de este umbral no se listan todas,
+// se pide precisar en vez de mostrar una pared de opciones.
+const MAX_OPCIONES_ACLARACION = 4;
+
+function construirPreguntaAclaracion({ candidatos }) {
+  if (candidatos.length > MAX_OPCIONES_ACLARACION) {
+    const masProbables = candidatos.slice(0, 3);
+    const texto = `Encontré ${candidatos.length} coincidencias, demasiadas para listar aquí — ¿podrías darme un poco más de detalle? Podría ser ${unirNatural(masProbables.map((c) => c.nombre))}, entre otras.`;
+    return { texto, tono: 'aclaracion', opciones: masProbables };
+  }
+  const nombres = candidatos.map((c) => c.nombre);
+  const texto = `Encontré más de una coincidencia: ${unirNatural(nombres)}. ¿Podrías indicarme a cuál te refieres?`;
+  return { texto, tono: 'aclaracion', opciones: candidatos };
+}
+
+function construirPreguntaDatoFaltante({ slot }) {
+  const nombreSlot = NOMBRE_SLOT[slot] || 'ese dato';
+  return { texto: `Para ayudarte necesito que me compartas ${nombreSlot}. ¿Me lo confirmas?`, tono: 'dato_faltante', slot };
+}
+
+// ---------------------------------------------------------------------------
+// Formateadores por intención
+// ---------------------------------------------------------------------------
+
+function formatearComparacionPedidos(comparacion) {
+  const partes = comparacion.map(({ pedido }) => {
+    if (!pedido) return 'uno de los pedidos no lo encontré en el sistema';
+    return `el ${pedido.numero_pedido} está ${estadoLegible(pedido.estado_general)}`;
+  });
+  let texto = `Comparando ambos pedidos: ${partes.join('; ')}.`;
+
+  // "Cuál llegó primero" se responde aquí mismo, de una vez — no hace falta que el usuario
+  // lo pregunte por separado, y evita depender de reconocer esa frase como seguimiento.
+  const conFechaLlegada = comparacion
+    .filter((c) => c.pedido && c.llegada?.fecha_recibo_tienda)
+    .map((c) => ({ numero: c.pedido.numero_pedido, fecha: new Date(c.llegada.fecha_recibo_tienda) }));
+
+  if (conFechaLlegada.length === comparacion.length && comparacion.length > 1) {
+    conFechaLlegada.sort((a, b) => a.fecha - b.fecha);
+    const [primero] = conFechaLlegada;
+    texto += ` El que llegó primero a tienda fue el ${primero.numero}, el ${formatearFecha(primero.fecha)}.`;
+  } else if (conFechaLlegada.length > 0 && conFechaLlegada.length < comparacion.length) {
+    const pendientes = comparacion.filter((c) => c.pedido && !c.llegada?.fecha_recibo_tienda).map((c) => c.pedido.numero_pedido);
+    texto += ` El que llegó primero fue el ${conFechaLlegada[0].numero} (${formatearFecha(conFechaLlegada[0].fecha)}); ${pendientes.join(', ')} todavía no ha llegado.`;
+  }
+
+  return texto;
+}
+
+function formatearConsultarPedido({ pedido, recepciones, pedidosMultiples, etiqueta, comparacion }) {
+  if (comparacion?.length > 1) {
+    return formatearComparacionPedidos(comparacion);
+  }
+  if (pedidosMultiples?.length) {
+    const lista = pedidosMultiples.map((p) => `${p.numero_pedido} (${p.estado_general.toLowerCase()})`).join(', ');
+    return `Encontré ${pedidosMultiples.length} pedidos que coinciden con ${etiqueta}: ${lista}. ¿Cuál te interesa?`;
+  }
+  if (!pedido) return `No encontré ningún pedido para ${etiqueta ?? 'esos datos'} — ¿podrías confirmarme el número de pedido?`;
+
+  const fecha = formatearFecha(pedido.fecha_creacion);
+  let texto = `El pedido ${pedido.numero_pedido} de ${pedido.proveedor?.nombre ?? 'un proveedor no registrado'} para ${pedido.tienda?.nombre ?? 'una tienda no registrada'} está ${estadoLegible(pedido.estado_general)}`;
+  texto += fecha ? `, creado el ${fecha}. ` : '. ';
+
+  if (pedido.posiciones?.length) {
+    texto += `Incluye ${pedido.posiciones.length} material(es): ${pedido.posiciones.map((p) => `${p.material?.descripcion ?? p.material} (${p.cantidad_solicitada} ${p.material?.unidad_medida ?? 'uds'})`).join(', ')}. `;
+  }
+
+  if (recepciones?.length && pedido.estado_general !== 'Abierto') {
+    const conFaltante = recepciones.filter((r) => r.cantidad_recibida < r.cantidad_solicitada);
+    if (conFaltante.length > 0) {
+      texto += `Todavía falta por recibir: ${conFaltante.map((r) => `${r.material?.descripcion ?? r.material} (${r.cantidad_recibida}/${r.cantidad_solicitada})`).join(', ')}.`;
+    } else {
+      texto += 'Ya se recibió todo lo solicitado.';
+    }
+  }
+
+  return texto.trim();
+}
+
+function formatearConsultarLlegada({ recepciones, llegada }) {
+  if (!llegada && !recepciones?.length) {
+    return 'No encontré información logística para ese pedido.';
+  }
+
+  const partes = [];
+
+  if (recepciones?.length) {
+    const completos = recepciones.filter((r) => r.estado_posicion === 'Completa').length;
+    partes.push(`De los ${recepciones.length} materiales del pedido, ${completos} ya se recibieron por completo.`);
+    const pendientes = recepciones.filter((r) => r.estado_posicion !== 'Completa');
+    if (pendientes.length > 0) {
+      partes.push(`Pendientes: ${pendientes.map((r) => `${r.material?.descripcion ?? r.material} (${r.estado_posicion.toLowerCase()})`).join(', ')}.`);
+    }
+  }
+
+  if (llegada) {
+    if (llegada.recibo_cedis) {
+      partes.push(`El CEDIS ya recibió la mercancía${llegada.fecha_recibo_cedis ? ` el ${formatearFecha(llegada.fecha_recibo_cedis)}` : ''}.`);
+    } else {
+      partes.push('El CEDIS todavía no recibe la mercancía del proveedor.');
+    }
+    if (llegada.cedis_entrega_tienda) {
+      partes.push(`El CEDIS ya despachó hacia la tienda${llegada.fecha_entrega_tienda ? ` el ${formatearFecha(llegada.fecha_entrega_tienda)}` : ''}.`);
+    } else if (llegada.recibo_cedis) {
+      partes.push('Aún no sale del CEDIS hacia la tienda.');
+    }
+    if (llegada.recibo_tienda) {
+      partes.push(`La tienda ya la recibió${llegada.fecha_recibo_tienda ? ` el ${formatearFecha(llegada.fecha_recibo_tienda)}` : ''}.`);
+    }
+    if (llegada.pendiente_cita) {
+      partes.push('Todavía está pendiente agendar una cita de entrega.');
+    }
+  }
+
+  return partes.join(' ');
+}
+
+function formatearConsultarCita(cita) {
+  if (!cita) {
+    return 'Todavía no hay una cita registrada para este pedido — en cuanto se agende te la puedo confirmar.';
+  }
+  const fecha = formatearFecha(cita.fecha);
+  let texto = `La cita con ${cita.proveedor?.nombre ?? 'el proveedor'} está ${cita.estado.toLowerCase()}, programada para el ${fecha} a las ${cita.hora}.`;
+  if (cita.estado === 'Vencida') {
+    texto += ' No se cumplió a tiempo — podría valer la pena dar seguimiento con el proveedor.';
+  } else if (cita.estado === 'Cumplida') {
+    texto += cita.entrega_realizada ? ' La entrega se completó en esa cita.' : '';
+  }
+  return texto;
+}
+
+function formatearFilaInventario(fila) {
+  let texto = `${fila.material?.descripcion ?? fila.material}: ${fila.inventario_disponible} disponibles`;
+  if (fila.inventario_transito > 0) texto += `, ${fila.inventario_transito} en tránsito`;
+  if (fila.faltante > 0) texto += `, con un faltante de ${fila.faltante}`;
+  return `${texto}.`;
+}
+
+/**
+ * Antes se devolvía un genérico "no existe esa combinación" en cuanto no había fila de
+ * inventario, aunque tienda y material sí existieran en el catálogo por separado — un usuario
+ * que consultaba un material real en una tienda real leía "no se tiene relación" y perdía
+ * confianza en el motor. Ahora se distinguen los tres casos reales por separado, para nunca
+ * negar la existencia de algo que sí existe: (1) la tienda no se reconoce, (2) el material no
+ * se reconoce, (3) ambos existen pero esa combinación puntual no tiene fila registrada (el
+ * material simplemente no se maneja en esa tienda, o el catálogo de inventario está incompleto).
+ */
+function formatearConsultarInventario(resultado) {
+  if (Array.isArray(resultado)) {
+    if (resultado.length === 0) return 'No encontré inventario registrado para esa tienda.';
+    return `Así está el inventario de la tienda: ${resultado.map(formatearFilaInventario).join(' ')}`;
+  }
+  if (resultado?.fila) {
+    return formatearFilaInventario(resultado.fila);
+  }
+  if (!resultado?.tienda) {
+    return 'No tengo registro de esa tienda en el catálogo — ¿me confirmas el nombre o código?';
+  }
+  if (!resultado?.material) {
+    return 'No tengo registro de ese material en el catálogo — ¿me confirmas el nombre o código?';
+  }
+  return `No tengo registro de inventario de ${resultado.material.descripcion ?? 'ese material'} para ${resultado.tienda.nombre ?? 'esa tienda'} — puede que no se maneje en esa tienda o que el catálogo no esté actualizado.`;
+}
+
+function formatearBuscarPedidos(pedidos, etiquetaFiltro) {
+  if (!pedidos || pedidos.length === 0) {
+    return `No encontré pedidos para ${etiquetaFiltro}.`;
+  }
+  const lista = pedidos.map((p) => `${p.numero_pedido} (${p.estado_general.toLowerCase()})`).join(', ');
+  return `Encontré ${pedidos.length} pedido(s) para ${etiquetaFiltro}: ${lista}.`;
+}
+
+// ---------------------------------------------------------------------------
+
+function formatearSeccion(intencion, resultado) {
+  switch (intencion) {
+    case 'consultar_pedido':
+      return formatearConsultarPedido(resultado);
+    case 'consultar_llegada':
+      return formatearConsultarLlegada(resultado);
+    case 'consultar_cita':
+      return formatearConsultarCita(resultado);
+    case 'consultar_inventario':
+      return formatearConsultarInventario(resultado);
+    case 'buscar_pedidos_por_tienda':
+      return formatearBuscarPedidos(resultado.pedidos, resultado.etiqueta);
+    case 'buscar_pedidos_por_proveedor':
+      return formatearBuscarPedidos(resultado.pedidos, `el proveedor ${resultado.etiqueta}`);
+    default:
+      return null;
+  }
+}
+
+function unirSecciones(secciones) {
+  const validas = secciones.filter(Boolean);
+  if (validas.length === 0) {
+    return 'No logré encontrar información para responderte eso. ¿Podrías darme un poco más de detalle?';
+  }
+  return validas
+    .map((seccion, indice) => {
+      if (indice === 0) return seccion;
+      const conector = elegirAlAzar(CONECTORES);
+      return `${conector}${minusculaInicial(seccion)}`;
+    })
+    .join(' ');
+}
+
+/**
+ * @param {object} resolucion - salida de ambiguity-resolver.resolverAmbiguedad
+ * @param {object} resultados - mapa intencion -> datos ya consultados por el orquestador
+ * @param {object[]} sugerencias - objetos { texto, intencionConfirmacion, ... } de
+ *   suggestion-engine.js (se anexa el texto al final; ver orchestrator.js para cómo se procesa
+ *   una eventual confirmación del usuario en el turno siguiente)
+ */
+function generarRespuesta({ resolucion, resultados, sugerencias = [] }) {
+  if (resolucion.necesitaAclaracion) {
+    return construirPreguntaAclaracion(resolucion.necesitaAclaracion);
+  }
+  if (resolucion.necesitaDatoFaltante) {
+    return construirPreguntaDatoFaltante(resolucion.necesitaDatoFaltante);
+  }
+  if (!resolucion.listas || resolucion.listas.length === 0) {
+    return {
+      texto: 'Disculpa, no logré entender bien tu solicitud. Puedo ayudarte con pedidos, llegadas, citas e inventario — ¿me das un poco más de detalle?',
+      tono: 'fallback',
+    };
+  }
+
+  const secciones = resolucion.listas.map((intencion) => formatearSeccion(intencion, resultados[intencion]));
+  let texto = unirSecciones(secciones);
+
+  if (sugerencias.length > 0) {
+    texto += ` ${sugerencias.map((s) => s.texto).join(' ')}`;
+  }
+
+  return { texto: texto.trim(), tono: 'respuesta' };
+}
+
+/** El usuario declinó ("no") una sugerencia proactiva — cierre breve, sin reabrir el tema. */
+function generarRespuestaSugerenciaDeclinada() {
+  return { texto: elegirAlAzar(FRASES_DECLINAR_SUGERENCIA), tono: 'confirmacion' };
+}
+
+/**
+ * El usuario aceptó ("sí") una sugerencia que no se puede ejecutar solo con esa confirmación
+ * (p. ej. faltaba saber cuál pedido). En vez de responder con el fallback genérico de "no
+ * entendí", se le hace la pregunta puntual que realmente falta.
+ */
+function generarRespuestaSugerenciaSinIntencion(preguntaSeguimiento) {
+  return { texto: preguntaSeguimiento || 'Claro, ¿podrías darme un poco más de detalle?', tono: 'dato_faltante' };
+}
+
+export { generarRespuesta, generarRespuestaSugerenciaDeclinada, generarRespuestaSugerenciaSinIntencion };

@@ -1,0 +1,28 @@
+.chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.chip {
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-glass);
+  border: 1px solid var(--color-border-subtle);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  transition: border-color var(--duration-base) var(--ease-standard),
+    background-color var(--duration-base) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.chip:hover,
+.chip:focus-visible {
+  border-color: var(--color-accent-ring);
+  background: var(--color-accent-soft);
+}
+
+.chip:active {
+  transform: scale(0.96);
+}
