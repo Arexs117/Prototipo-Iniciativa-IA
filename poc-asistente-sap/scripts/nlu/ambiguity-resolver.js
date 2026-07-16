@@ -74,9 +74,17 @@ function elegirDeFamiliaPedido(candidatosFamilia, entidadesResueltas) {
 /**
  * @param {Array} candidatosIntencion - salida de intent-classifier.js
  * @param {Object} entidadesResueltas - salida de session-state.resolverEntidadesConContexto
+ * @param {string[]} [conceptosDelTurno] - TODOS los conceptos detectados este turno (paso 3,
+ *   abbreviations.js), no solo los que disparan alguna intención candidata. Necesario porque
+ *   'tienda'/'proveedor' se detectan como concepto aunque no estén registrados como disparador
+ *   de ninguna intención de la familia "pedido" — sin esto, "¿qué pedidos tiene la tienda?"
+ *   perdía la pista de que el usuario sí mencionó "tienda" y terminaba preguntando por el
+ *   número de pedido en su lugar. Se pasa por separado (en vez de agregarlo como disparador
+ *   real en config/intents.js) para no alterar qué intenciones se consideran candidatas — eso
+ *   afecta también la detección de "cambio de tema" en orchestrator.js.
  * @returns {{ listas: string[], necesitaAclaracion: object|null, necesitaDatoFaltante: object|null }}
  */
-function resolverAmbiguedad(candidatosIntencion, entidadesResueltas) {
+function resolverAmbiguedad(candidatosIntencion, entidadesResueltas, conceptosDelTurno = []) {
   if (!candidatosIntencion || candidatosIntencion.length === 0) {
     return { listas: [], necesitaAclaracion: null, necesitaDatoFaltante: null };
   }
@@ -98,7 +106,14 @@ function resolverAmbiguedad(candidatosIntencion, entidadesResueltas) {
   }
 
   // Nada listo: primero se resuelve ambigüedad de datos (varios candidatos), luego dato faltante.
-  const todas = [...familiaPedido, ...otras];
+  // Se usa `evaluaciones` (el orden original por especificidad: intent-classifier.js ya ordenó
+  // por cantidad de conceptos coincidentes) y NO `[...familiaPedido, ...otras]` — esa
+  // reconstrucción metía SIEMPRE a la familia "pedido" antes que cualquier otra intención, sin
+  // importar cuál era en realidad más relevante. Por ejemplo, "¿ya tiene cita mi pedido?"
+  // coincide con 'cita' (exclusivo de consultar_cita) Y con 'pedido' (compartido por CUATRO
+  // intenciones distintas, incluida buscar_pedidos_por_tienda) — anteponer la familia a ciegas
+  // hacía que se preguntara por la tienda en vez de por el número de pedido de la cita.
+  const todas = evaluaciones;
   const conAmbiguedad = todas.find((e) => e.ambiguos.length > 0);
   if (conAmbiguedad) {
     const slot = conAmbiguedad.ambiguos[0];
@@ -113,7 +128,7 @@ function resolverAmbiguedad(candidatosIntencion, entidadesResueltas) {
   // este turno (p. ej. escribió "proveedor" pero el código no existe) sobre el orden interno
   // de las intenciones — así "¿qué pedidos tiene el proveedor XYZ?" con un código inválido
   // pregunta por el proveedor, no por un dato que el usuario nunca mencionó (la tienda).
-  const conceptosMencionados = new Set(todas.flatMap((e) => e.señales));
+  const conceptosMencionados = new Set([...todas.flatMap((e) => e.señales), ...conceptosDelTurno]);
   const conFaltante =
     todas.find((e) => e.faltantes.some((slot) => conceptosMencionados.has(slot))) ||
     todas.find((e) => e.faltantes.length > 0);

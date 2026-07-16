@@ -19,6 +19,25 @@ const PATRON_NUMERO_PEDIDO = /\b\d{6,8}\b/;
 // "pedidos" (plural) al concepto singular "pedido" y perderíamos la marca de plural.
 const PATRON_LISTADO = /\b(pedidos|otros|otras|cuales|cuáles|todos|todas)\b/;
 
+/**
+ * Cuántas intenciones distintas usan cada concepto como disparador. Un concepto que SOLO
+ * aparece en una intención (p. ej. 'cita', exclusivo de consultar_cita) es mucha más evidencia
+ * de esa intención que uno compartido por varias (p. ej. 'pedido', que disparan por igual
+ * consultar_pedido, buscar_pedidos_por_tienda Y buscar_pedidos_por_proveedor) — de ahí que el
+ * peso de cada concepto sea inversamente proporcional a cuántas intenciones lo comparten.
+ */
+function construirFrecuenciaConceptos() {
+  const frecuencia = new Map();
+  for (const definicion of Object.values(INTENCIONES)) {
+    for (const concepto of definicion.conceptosDisparadores) {
+      frecuencia.set(concepto, (frecuencia.get(concepto) || 0) + 1);
+    }
+  }
+  return frecuencia;
+}
+const FRECUENCIA_CONCEPTOS = construirFrecuenciaConceptos();
+const pesoConcepto = (concepto) => 1 / (FRECUENCIA_CONCEPTOS.get(concepto) || 1);
+
 function clasificarIntenciones({ textoExpandido, textoOriginalNormalizado, conceptos }) {
   const conceptosDetectados = new Set(conceptos.map((c) => c.concepto));
   const tieneNumeroPedido = PATRON_NUMERO_PEDIDO.test(textoOriginalNormalizado || textoExpandido || '');
@@ -32,7 +51,13 @@ function clasificarIntenciones({ textoExpandido, textoOriginalNormalizado, conce
     candidatos.push({
       intencion,
       señales,
-      confianza: Number((señales.length / definicion.conceptosDisparadores.length).toFixed(2)),
+      // Suma de pesos de los conceptos que SÍ coincidieron (no un ratio contra el total de
+      // disparadores propios) — así una intención con un solo disparador compartido por varias
+      // (buscar_pedidos_por_tienda/'pedido') no le gana en falso a otra que coincidió en un
+      // concepto exclusivo y mucho más específico (consultar_cita/'cita'), como pasaba antes al
+      // usar señales.length / conceptosDisparadores.length (ratio 1/1 = 1.0 siempre "perfecto"
+      // para intenciones de un solo disparador, sin importar qué tan genérico fuera ese concepto).
+      confianza: Number(señales.reduce((suma, c) => suma + pesoConcepto(c), 0).toFixed(3)),
       pistaNumeroPedido: tieneNumeroPedido,
       prefiereListado,
     });

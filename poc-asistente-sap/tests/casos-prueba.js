@@ -615,6 +615,58 @@ const casosDePrueba = [
       },
     ],
   },
+
+  // ---------------------------------------------------------------------
+  // Tarjetas de sugerencias iniciales: cada una envía la pregunta SIN el dato
+  // (ver suggestion-cards.js) para que el motor lo pida y el usuario lo
+  // complete. Expuso tres bugs reales de priorización que antes quedaban
+  // ocultos porque las tarjetas siempre mandaban el dato ya resuelto:
+  //  1) el ratio señales/total-de-disparadores favorecía en falso a una
+  //     intención de un solo disparador compartido sobre otra con evidencia
+  //     más fuerte pero de un catálogo de conceptos más grande;
+  //  2) al no haber nada "listo", siempre se anteponía la familia "pedido" a
+  //     cualquier otra intención sin importar cuál era más relevante;
+  //  3) el turno pendiente se guardaba con la intención de mayor confianza
+  //     general, no con la intención cuyo dato realmente se preguntó.
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Tarjeta "Consultar pedido": pregunta el número y responde al recibirlo',
+    turnos: [
+      { mensaje: '¿Cómo va mi pedido?', verificar: (r) => r.respuesta.tono === 'dato_faltante' && incluye(r.respuesta.texto, 'número de pedido') },
+      { mensaje: '4500102', verificar: (r) => r.intenciones.includes('consultar_pedido') && incluye(r.respuesta.texto, '4500102') },
+    ],
+  },
+  {
+    nombre: 'Tarjeta "Validar cita": prioriza el número de pedido sobre la tienda (concepto "cita" es más específico que "pedido")',
+    turnos: [
+      { mensaje: '¿Ya tiene cita mi pedido?', verificar: (r) => r.respuesta.tono === 'dato_faltante' && incluye(r.respuesta.texto, 'número de pedido') },
+      { mensaje: '4500108', verificar: (r) => r.intenciones.includes('consultar_cita') },
+    ],
+  },
+  {
+    nombre: 'Tarjeta "Buscar por proveedor": pregunta por el proveedor y completa correctamente esa intención (no otra)',
+    turnos: [
+      { mensaje: '¿Qué pedidos tiene el proveedor?', verificar: (r) => r.respuesta.tono === 'dato_faltante' && incluye(r.respuesta.texto, 'proveedor') },
+      { mensaje: 'P001', verificar: (r) => r.intenciones.includes('buscar_pedidos_por_proveedor') && incluye(r.respuesta.texto, 'Grupo Lácteos del Norte') },
+    ],
+  },
+  {
+    nombre: 'Tarjeta "Pedidos pendientes": pregunta por la tienda (no por el número de pedido)',
+    turnos: [
+      { mensaje: '¿Qué pedidos tiene la tienda?', verificar: (r) => r.respuesta.tono === 'dato_faltante' && incluye(r.respuesta.texto, 'tienda') },
+      { mensaje: 'Satélite', verificar: (r) => r.intenciones.includes('buscar_pedidos_por_tienda') && incluye(r.respuesta.texto, 'Satélite') },
+    ],
+  },
+  {
+    nombre: 'Tarjeta "Comparar pedidos": responder con dos números compara, en vez de mostrar una aclaración rota',
+    turnos: [
+      { mensaje: 'Quiero comparar pedidos', verificar: (r) => r.respuesta.tono === 'dato_faltante' },
+      {
+        mensaje: '4500101 y 4500117',
+        verificar: (r) => incluye(r.respuesta.texto, '4500101') && incluye(r.respuesta.texto, '4500117') && !incluye(r.respuesta.texto, 'undefined'),
+      },
+    ],
+  },
 ];
 
 export { casosDePrueba };

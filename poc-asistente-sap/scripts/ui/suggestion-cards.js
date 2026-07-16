@@ -7,15 +7,23 @@
 
 import { obtenerIcono } from './icons.js';
 
+/**
+ * Cada tarjeta ahora envía una pregunta SIN el dato específico (número de pedido, tienda,
+ * proveedor...) — el motor ya sabe pedir exactamente ese dato faltante (paso 7 del pipeline,
+ * ver ambiguity-resolver.js), así que la tarjeta solo dispara la intención correcta y deja que
+ * la conversación real ocurra: el asistente pregunta, el usuario responde con su dato, y recibe
+ * la respuesta. Antes la tarjeta mandaba la pregunta YA resuelta con un ejemplo (p. ej. "el
+ * pedido 4500102"), lo que respondía de una sola vez y nunca mostraba el flujo de pedir datos.
+ */
 const SUGERENCIAS_INICIALES = [
-  { icono: 'caja', etiqueta: 'Consultar pedido', mensaje: '¿Cómo va el pedido 4500102?' },
-  { icono: 'almacen', etiqueta: 'Consultar inventario', mensaje: '¿Cuánto inventario hay del material M001 en la tienda T002?' },
-  { icono: 'edificio', etiqueta: 'Buscar por proveedor', mensaje: '¿Qué pedidos tiene el proveedor P001?' },
-  { icono: 'calendario', etiqueta: 'Validar cita', mensaje: '¿El pedido 4500108 ya tiene cita?' },
-  { icono: 'reloj', etiqueta: 'Pedidos pendientes', mensaje: '¿Qué pedidos tiene la tienda Satélite?' },
-  { icono: 'camion', etiqueta: 'Recepciones', mensaje: '¿Ya llegó el pedido 4500105?' },
-  { icono: 'destino', etiqueta: 'Estado de entrega', mensaje: '¿Cómo va la entrega del pedido 4500101?' },
-  { icono: 'balanza', etiqueta: 'Comparar pedidos', mensaje: 'Compara los pedidos 4500101 y 4500117' },
+  { icono: 'caja', etiqueta: 'Consultar pedido', mensaje: '¿Cómo va mi pedido?' },
+  { icono: 'almacen', etiqueta: 'Consultar inventario', mensaje: '¿Cuánto inventario hay?' },
+  { icono: 'edificio', etiqueta: 'Buscar por proveedor', mensaje: '¿Qué pedidos tiene el proveedor?' },
+  { icono: 'calendario', etiqueta: 'Validar cita', mensaje: '¿Ya tiene cita mi pedido?' },
+  { icono: 'reloj', etiqueta: 'Pedidos pendientes', mensaje: '¿Qué pedidos tiene la tienda?' },
+  { icono: 'camion', etiqueta: 'Recepciones', mensaje: '¿Ya llegó mi pedido?' },
+  { icono: 'destino', etiqueta: 'Estado de entrega', mensaje: '¿Cómo va la entrega de mi pedido?' },
+  { icono: 'balanza', etiqueta: 'Comparar pedidos', mensaje: 'Quiero comparar pedidos' },
 ];
 
 function renderizarSugerenciasIniciales(onSeleccionar) {

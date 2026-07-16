@@ -81,6 +81,17 @@ function construirEntidadesDesdePendiente(estado, entidadesDelTurno, textoNormal
     if (tipo === pendiente.slot) {
       if (opcionElegida) {
         entidadesResueltas[tipo] = { valor: opcionElegida.codigo, origen: 'turno_actual' };
+      } else if (candidatosDelTurno.length > 1 && tipo === 'numero_pedido') {
+        // Igual que en session-state.resolverEntidadesConContexto: dos números de pedido en la
+        // respuesta a un dato pendiente ("¿cuál es el número de pedido?" -> "4500101 y
+        // 4500117") es una comparación, no una ambigüedad de nombre — sin este caso especial se
+        // armaba una "aclaración" con candidatos que ni siquiera tienen nombre (son códigos
+        // explícitos), mostrando una pregunta rota en vez de comparar los dos pedidos.
+        entidadesResueltas[tipo] = {
+          valor: candidatosDelTurno[0].codigo,
+          valoresMultiples: candidatosDelTurno.map((c) => c.codigo),
+          origen: 'turno_actual',
+        };
       } else if (candidatosDelTurno.length > 1) {
         entidadesResueltas[tipo] = { candidatos: candidatosDelTurno, origen: 'turno_actual_ambiguo' };
       } else if (candidatosDelTurno.length === 1) {
@@ -313,7 +324,11 @@ function procesarMensaje(estado, mensajeUsuario) {
     const soloFallbackGenerico = candidatosNormales.length === 1 && candidatosNormales[0].señales.includes('verbo_consulta_generico');
     if (candidatosNormales.length === 0 || soloFallbackGenerico) {
       const entidadesResueltas = construirEntidadesDesdePendiente(estado, entidadesDelTurno, mensajeUsuario);
-      const resolucion = resolverAmbiguedad([{ intencion: estado.pendiente.intencion, señales: ['continuacion'], confianza: 1 }], entidadesResueltas);
+      const resolucion = resolverAmbiguedad(
+        [{ intencion: estado.pendiente.intencion, señales: ['continuacion'], confianza: 1 }],
+        entidadesResueltas,
+        conceptos.map((c) => c.concepto)
+      );
 
       if (resolucion.listas.length > 0) {
         estado.pendiente = null;
@@ -347,10 +362,19 @@ function procesarMensaje(estado, mensajeUsuario) {
   const entidadesResueltas = enriquecerConPedidoDelTurno(entidadesDelPaso6);
 
   // Paso 7: ambigüedad / confianza.
-  const resolucion = resolverAmbiguedad(candidatosIntencion, entidadesResueltas);
+  const resolucion = resolverAmbiguedad(candidatosIntencion, entidadesResueltas, conceptos.map((c) => c.concepto));
 
   if (resolucion.listas.length === 0 && (resolucion.necesitaAclaracion || resolucion.necesitaDatoFaltante) && candidatosIntencion.length > 0) {
-    guardarPendiente(estado, candidatosIntencion[0].intencion, resolucion, entidadesResueltas);
+    // Importante: se guarda la intención que resolverAmbiguedad determinó que necesita el dato
+    // (la misma cuyo slot se le está preguntando al usuario), NO la de mayor confianza general
+    // — pueden ser distintas cuando dos intenciones de la familia "pedido" comparten concepto
+    // disparador (p. ej. "¿qué pedidos tiene el proveedor?" pregunta por PROVEEDOR porque así lo
+    // decidió la priorización de conceptos mencionados, aunque consultar_pedido haya rankeado
+    // más alto en general). Guardar la incorrecta hacía que la respuesta del usuario completara
+    // una intención distinta a la que realmente se le preguntó.
+    const intencionPendiente =
+      resolucion.necesitaAclaracion?.intencion || resolucion.necesitaDatoFaltante?.intencion || candidatosIntencion[0].intencion;
+    guardarPendiente(estado, intencionPendiente, resolucion, entidadesResueltas);
   }
 
   return finalizarTurno(estado, {
