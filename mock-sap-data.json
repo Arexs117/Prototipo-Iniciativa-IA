@@ -1,0 +1,1431 @@
+{
+  "proveedores": [
+    {
+      "codigo_proveedor": "P001",
+      "nombre": "Grupo Lácteos del Norte",
+      "categoria_principal": "Lácteos",
+      "ubicacion": "Monterrey, NL"
+    },
+    {
+      "codigo_proveedor": "P002",
+      "nombre": "Distribuidora Vega",
+      "categoria_principal": "Bebidas",
+      "ubicacion": "Ciudad de México"
+    },
+    {
+      "codigo_proveedor": "P003",
+      "nombre": "Alimentos San Miguel",
+      "categoria_principal": "Abarrotes",
+      "ubicacion": "León, GTO"
+    },
+    {
+      "codigo_proveedor": "P004",
+      "nombre": "Comercializadora Rivas",
+      "categoria_principal": "Limpieza",
+      "ubicacion": "Ciudad de México"
+    },
+    {
+      "codigo_proveedor": "P005",
+      "nombre": "Grupo Industrial Cepeda",
+      "categoria_principal": "Abarrotes",
+      "ubicacion": "Guadalajara, JAL"
+    },
+    {
+      "codigo_proveedor": "P006",
+      "nombre": "Proveedora del Bajío",
+      "categoria_principal": "Lácteos",
+      "ubicacion": "León, GTO"
+    },
+    {
+      "codigo_proveedor": "P007",
+      "nombre": "Distribuidora Aurora",
+      "categoria_principal": "Bebidas",
+      "ubicacion": "Ciudad de México"
+    },
+    {
+      "codigo_proveedor": "P008",
+      "nombre": "Comercial Hermanos Soto",
+      "categoria_principal": "Limpieza",
+      "ubicacion": "Monterrey, NL"
+    }
+  ],
+  "cedis": [
+    {
+      "codigo_cedis": "C01",
+      "nombre": "CEDIS Norte",
+      "ubicacion": "Monterrey, NL"
+    },
+    {
+      "codigo_cedis": "C02",
+      "nombre": "CEDIS Bajío",
+      "ubicacion": "León, GTO"
+    },
+    {
+      "codigo_cedis": "C03",
+      "nombre": "CEDIS Centro",
+      "ubicacion": "Ciudad de México"
+    },
+    {
+      "codigo_cedis": "C04",
+      "nombre": "CEDIS Occidente",
+      "ubicacion": "Guadalajara, JAL"
+    }
+  ],
+  "tiendas": [
+    {
+      "codigo_tienda": "T001",
+      "nombre": "Tienda Cumbres",
+      "codigo_cedis_asociado": "C01",
+      "ubicacion": "Monterrey, NL"
+    },
+    {
+      "codigo_tienda": "T002",
+      "nombre": "Tienda Cumbres Sur",
+      "codigo_cedis_asociado": "C01",
+      "ubicacion": "Monterrey, NL"
+    },
+    {
+      "codigo_tienda": "T003",
+      "nombre": "Tienda Reforma",
+      "codigo_cedis_asociado": "C03",
+      "ubicacion": "Ciudad de México"
+    },
+    {
+      "codigo_tienda": "T004",
+      "nombre": "Tienda Providencia",
+      "codigo_cedis_asociado": "C04",
+      "ubicacion": "Guadalajara, JAL"
+    },
+    {
+      "codigo_tienda": "T005",
+      "nombre": "Tienda León Centro",
+      "codigo_cedis_asociado": "C02",
+      "ubicacion": "León, GTO"
+    },
+    {
+      "codigo_tienda": "T006",
+      "nombre": "Tienda Satélite",
+      "codigo_cedis_asociado": "C03",
+      "ubicacion": "Ciudad de México"
+    }
+  ],
+  "materiales": [
+    {
+      "codigo_material": "M001",
+      "descripcion": "Leche Entera 1L",
+      "categoria": "Lácteos",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M002",
+      "descripcion": "Leche Deslactosada 1L",
+      "categoria": "Lácteos",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M003",
+      "descripcion": "Refresco de Cola 600ml",
+      "categoria": "Bebidas",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M004",
+      "descripcion": "Refresco de Cola Zero 600ml",
+      "categoria": "Bebidas",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M005",
+      "descripcion": "Detergente Líquido 5L",
+      "categoria": "Limpieza",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M006",
+      "descripcion": "Papel Higiénico 12pz",
+      "categoria": "Limpieza",
+      "unidad_medida": "paq"
+    },
+    {
+      "codigo_material": "M007",
+      "descripcion": "Aceite Vegetal 1L",
+      "categoria": "Abarrotes",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M008",
+      "descripcion": "Arroz Blanco 1kg",
+      "categoria": "Abarrotes",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M009",
+      "descripcion": "Frijol Negro 1kg",
+      "categoria": "Abarrotes",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M010",
+      "descripcion": "Café Molido 500g",
+      "categoria": "Abarrotes",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M011",
+      "descripcion": "Galletas Surtidas 400g",
+      "categoria": "Abarrotes",
+      "unidad_medida": "pza"
+    },
+    {
+      "codigo_material": "M012",
+      "descripcion": "Agua Embotellada 1.5L",
+      "categoria": "Bebidas",
+      "unidad_medida": "pza"
+    }
+  ],
+  "pedidos": [
+    {
+      "numero_pedido": "4500101",
+      "codigo_proveedor": "P001",
+      "codigo_tienda": "T001",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-06-01T00:00:00",
+      "estado_general": "Cerrado"
+    },
+    {
+      "numero_pedido": "4500102",
+      "codigo_proveedor": "P001",
+      "codigo_tienda": "T002",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-06-03T00:00:00",
+      "estado_general": "Parcial"
+    },
+    {
+      "numero_pedido": "4500103",
+      "codigo_proveedor": "P002",
+      "codigo_tienda": "T003",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-06-15T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500104",
+      "codigo_proveedor": "P002",
+      "codigo_tienda": "T004",
+      "codigo_cedis": "C04",
+      "fecha_creacion": "2026-05-20T00:00:00",
+      "estado_general": "Cerrado"
+    },
+    {
+      "numero_pedido": "4500105",
+      "codigo_proveedor": "P003",
+      "codigo_tienda": "T005",
+      "codigo_cedis": "C02",
+      "fecha_creacion": "2026-06-10T00:00:00",
+      "estado_general": "Parcial"
+    },
+    {
+      "numero_pedido": "4500106",
+      "codigo_proveedor": "P003",
+      "codigo_tienda": "T001",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-06-20T00:00:00",
+      "estado_general": "Parcial"
+    },
+    {
+      "numero_pedido": "4500107",
+      "codigo_proveedor": "P004",
+      "codigo_tienda": "T006",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-05-15T00:00:00",
+      "estado_general": "Cerrado"
+    },
+    {
+      "numero_pedido": "4500108",
+      "codigo_proveedor": "P004",
+      "codigo_tienda": "T003",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-06-01T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500109",
+      "codigo_proveedor": "P005",
+      "codigo_tienda": "T002",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-06-25T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500110",
+      "codigo_proveedor": "P005",
+      "codigo_tienda": "T004",
+      "codigo_cedis": "C04",
+      "fecha_creacion": "2026-06-05T00:00:00",
+      "estado_general": "Parcial"
+    },
+    {
+      "numero_pedido": "4500111",
+      "codigo_proveedor": "P006",
+      "codigo_tienda": "T005",
+      "codigo_cedis": "C02",
+      "fecha_creacion": "2026-06-12T00:00:00",
+      "estado_general": "Cerrado"
+    },
+    {
+      "numero_pedido": "4500112",
+      "codigo_proveedor": "P006",
+      "codigo_tienda": "T001",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-06-18T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500113",
+      "codigo_proveedor": "P007",
+      "codigo_tienda": "T006",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-06-22T00:00:00",
+      "estado_general": "Parcial"
+    },
+    {
+      "numero_pedido": "4500114",
+      "codigo_proveedor": "P007",
+      "codigo_tienda": "T003",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-05-28T00:00:00",
+      "estado_general": "Cerrado"
+    },
+    {
+      "numero_pedido": "4500115",
+      "codigo_proveedor": "P008",
+      "codigo_tienda": "T002",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-07-07T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500116",
+      "codigo_proveedor": "P008",
+      "codigo_tienda": "T004",
+      "codigo_cedis": "C04",
+      "fecha_creacion": "2026-06-08T00:00:00",
+      "estado_general": "Parcial"
+    },
+    {
+      "numero_pedido": "4500117",
+      "codigo_proveedor": "P001",
+      "codigo_tienda": "T003",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-06-27T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500118",
+      "codigo_proveedor": "P002",
+      "codigo_tienda": "T005",
+      "codigo_cedis": "C02",
+      "fecha_creacion": "2026-06-14T00:00:00",
+      "estado_general": "Cerrado"
+    },
+    {
+      "numero_pedido": "4500119",
+      "codigo_proveedor": "P003",
+      "codigo_tienda": "T006",
+      "codigo_cedis": "C03",
+      "fecha_creacion": "2026-07-09T00:00:00",
+      "estado_general": "Abierto"
+    },
+    {
+      "numero_pedido": "4500120",
+      "codigo_proveedor": "P004",
+      "codigo_tienda": "T001",
+      "codigo_cedis": "C01",
+      "fecha_creacion": "2026-06-09T00:00:00",
+      "estado_general": "Cerrado"
+    }
+  ],
+  "pedidoPosiciones": [
+    {
+      "numero_pedido": "4500101",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "200"
+    },
+    {
+      "numero_pedido": "4500101",
+      "posicion": "20",
+      "codigo_material": "M007",
+      "cantidad_solicitada": "100"
+    },
+    {
+      "numero_pedido": "4500101",
+      "posicion": "30",
+      "codigo_material": "M008",
+      "cantidad_solicitada": "150"
+    },
+    {
+      "numero_pedido": "4500102",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "100"
+    },
+    {
+      "numero_pedido": "4500102",
+      "posicion": "20",
+      "codigo_material": "M003",
+      "cantidad_solicitada": "80"
+    },
+    {
+      "numero_pedido": "4500103",
+      "posicion": "10",
+      "codigo_material": "M002",
+      "cantidad_solicitada": "60"
+    },
+    {
+      "numero_pedido": "4500103",
+      "posicion": "20",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "40"
+    },
+    {
+      "numero_pedido": "4500104",
+      "posicion": "10",
+      "codigo_material": "M006",
+      "cantidad_solicitada": "120"
+    },
+    {
+      "numero_pedido": "4500105",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "150"
+    },
+    {
+      "numero_pedido": "4500105",
+      "posicion": "20",
+      "codigo_material": "M010",
+      "cantidad_solicitada": "70"
+    },
+    {
+      "numero_pedido": "4500106",
+      "posicion": "10",
+      "codigo_material": "M003",
+      "cantidad_solicitada": "90"
+    },
+    {
+      "numero_pedido": "4500106",
+      "posicion": "20",
+      "codigo_material": "M004",
+      "cantidad_solicitada": "60"
+    },
+    {
+      "numero_pedido": "4500106",
+      "posicion": "30",
+      "codigo_material": "M011",
+      "cantidad_solicitada": "40"
+    },
+    {
+      "numero_pedido": "4500107",
+      "posicion": "10",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "60"
+    },
+    {
+      "numero_pedido": "4500108",
+      "posicion": "10",
+      "codigo_material": "M007",
+      "cantidad_solicitada": "80"
+    },
+    {
+      "numero_pedido": "4500109",
+      "posicion": "10",
+      "codigo_material": "M012",
+      "cantidad_solicitada": "200"
+    },
+    {
+      "numero_pedido": "4500110",
+      "posicion": "10",
+      "codigo_material": "M008",
+      "cantidad_solicitada": "100"
+    },
+    {
+      "numero_pedido": "4500110",
+      "posicion": "20",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "90"
+    },
+    {
+      "numero_pedido": "4500111",
+      "posicion": "10",
+      "codigo_material": "M002",
+      "cantidad_solicitada": "50"
+    },
+    {
+      "numero_pedido": "4500112",
+      "posicion": "10",
+      "codigo_material": "M005",
+      "cantidad_solicitada": "70"
+    },
+    {
+      "numero_pedido": "4500113",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "120"
+    },
+    {
+      "numero_pedido": "4500113",
+      "posicion": "20",
+      "codigo_material": "M006",
+      "cantidad_solicitada": "80"
+    },
+    {
+      "numero_pedido": "4500114",
+      "posicion": "10",
+      "codigo_material": "M010",
+      "cantidad_solicitada": "60"
+    },
+    {
+      "numero_pedido": "4500114",
+      "posicion": "20",
+      "codigo_material": "M011",
+      "cantidad_solicitada": "50"
+    },
+    {
+      "numero_pedido": "4500115",
+      "posicion": "10",
+      "codigo_material": "M003",
+      "cantidad_solicitada": "100"
+    },
+    {
+      "numero_pedido": "4500116",
+      "posicion": "10",
+      "codigo_material": "M004",
+      "cantidad_solicitada": "150"
+    },
+    {
+      "numero_pedido": "4500116",
+      "posicion": "20",
+      "codigo_material": "M012",
+      "cantidad_solicitada": "100"
+    },
+    {
+      "numero_pedido": "4500117",
+      "posicion": "10",
+      "codigo_material": "M007",
+      "cantidad_solicitada": "90"
+    },
+    {
+      "numero_pedido": "4500117",
+      "posicion": "20",
+      "codigo_material": "M008",
+      "cantidad_solicitada": "60"
+    },
+    {
+      "numero_pedido": "4500118",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "80"
+    },
+    {
+      "numero_pedido": "4500118",
+      "posicion": "20",
+      "codigo_material": "M002",
+      "cantidad_solicitada": "70"
+    },
+    {
+      "numero_pedido": "4500118",
+      "posicion": "30",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "50"
+    },
+    {
+      "numero_pedido": "4500119",
+      "posicion": "10",
+      "codigo_material": "M006",
+      "cantidad_solicitada": "40"
+    },
+    {
+      "numero_pedido": "4500120",
+      "posicion": "10",
+      "codigo_material": "M010",
+      "cantidad_solicitada": "100"
+    }
+  ],
+  "recepciones": [
+    {
+      "numero_pedido": "4500101",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "200",
+      "cantidad_recibida": "200",
+      "fecha_recepcion": "2026-06-07T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500101",
+      "posicion": "20",
+      "codigo_material": "M007",
+      "cantidad_solicitada": "100",
+      "cantidad_recibida": "100",
+      "fecha_recepcion": "2026-06-07T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500101",
+      "posicion": "30",
+      "codigo_material": "M008",
+      "cantidad_solicitada": "150",
+      "cantidad_recibida": "150",
+      "fecha_recepcion": "2026-06-07T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500102",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "100",
+      "cantidad_recibida": "80",
+      "fecha_recepcion": "2026-06-11T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500102",
+      "posicion": "20",
+      "codigo_material": "M003",
+      "cantidad_solicitada": "80",
+      "cantidad_recibida": "32",
+      "fecha_recepcion": "2026-06-11T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500103",
+      "posicion": "10",
+      "codigo_material": "M002",
+      "cantidad_solicitada": "60",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500103",
+      "posicion": "20",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "40",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500104",
+      "posicion": "10",
+      "codigo_material": "M006",
+      "cantidad_solicitada": "120",
+      "cantidad_recibida": "120",
+      "fecha_recepcion": "2026-05-26T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500105",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "150",
+      "cantidad_recibida": "120",
+      "fecha_recepcion": "2026-06-18T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500105",
+      "posicion": "20",
+      "codigo_material": "M010",
+      "cantidad_solicitada": "70",
+      "cantidad_recibida": "28",
+      "fecha_recepcion": "2026-06-18T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500106",
+      "posicion": "10",
+      "codigo_material": "M003",
+      "cantidad_solicitada": "90",
+      "cantidad_recibida": "27",
+      "fecha_recepcion": "2026-06-25T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500106",
+      "posicion": "20",
+      "codigo_material": "M004",
+      "cantidad_solicitada": "60",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500106",
+      "posicion": "30",
+      "codigo_material": "M011",
+      "cantidad_solicitada": "40",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500107",
+      "posicion": "10",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "60",
+      "cantidad_recibida": "60",
+      "fecha_recepcion": "2026-05-21T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500108",
+      "posicion": "10",
+      "codigo_material": "M007",
+      "cantidad_solicitada": "80",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500109",
+      "posicion": "10",
+      "codigo_material": "M012",
+      "cantidad_solicitada": "200",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "En tránsito a tienda"
+    },
+    {
+      "numero_pedido": "4500110",
+      "posicion": "10",
+      "codigo_material": "M008",
+      "cantidad_solicitada": "100",
+      "cantidad_recibida": "80",
+      "fecha_recepcion": "2026-06-13T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500110",
+      "posicion": "20",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "90",
+      "cantidad_recibida": "36",
+      "fecha_recepcion": "2026-06-13T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500111",
+      "posicion": "10",
+      "codigo_material": "M002",
+      "cantidad_solicitada": "50",
+      "cantidad_recibida": "50",
+      "fecha_recepcion": "2026-06-18T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500112",
+      "posicion": "10",
+      "codigo_material": "M005",
+      "cantidad_solicitada": "70",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500113",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "120",
+      "cantidad_recibida": "36",
+      "fecha_recepcion": "2026-06-27T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500113",
+      "posicion": "20",
+      "codigo_material": "M006",
+      "cantidad_solicitada": "80",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500114",
+      "posicion": "10",
+      "codigo_material": "M010",
+      "cantidad_solicitada": "60",
+      "cantidad_recibida": "60",
+      "fecha_recepcion": "2026-06-03T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500114",
+      "posicion": "20",
+      "codigo_material": "M011",
+      "cantidad_solicitada": "50",
+      "cantidad_recibida": "50",
+      "fecha_recepcion": "2026-06-03T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500115",
+      "posicion": "10",
+      "codigo_material": "M003",
+      "cantidad_solicitada": "100",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500116",
+      "posicion": "10",
+      "codigo_material": "M004",
+      "cantidad_solicitada": "150",
+      "cantidad_recibida": "120",
+      "fecha_recepcion": "2026-06-16T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500116",
+      "posicion": "20",
+      "codigo_material": "M012",
+      "cantidad_solicitada": "100",
+      "cantidad_recibida": "40",
+      "fecha_recepcion": "2026-06-16T00:00:00",
+      "estado_posicion": "Parcial"
+    },
+    {
+      "numero_pedido": "4500117",
+      "posicion": "10",
+      "codigo_material": "M007",
+      "cantidad_solicitada": "90",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "En tránsito a tienda"
+    },
+    {
+      "numero_pedido": "4500117",
+      "posicion": "20",
+      "codigo_material": "M008",
+      "cantidad_solicitada": "60",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "En tránsito a tienda"
+    },
+    {
+      "numero_pedido": "4500118",
+      "posicion": "10",
+      "codigo_material": "M001",
+      "cantidad_solicitada": "80",
+      "cantidad_recibida": "80",
+      "fecha_recepcion": "2026-06-20T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500118",
+      "posicion": "20",
+      "codigo_material": "M002",
+      "cantidad_solicitada": "70",
+      "cantidad_recibida": "70",
+      "fecha_recepcion": "2026-06-20T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500118",
+      "posicion": "30",
+      "codigo_material": "M009",
+      "cantidad_solicitada": "50",
+      "cantidad_recibida": "50",
+      "fecha_recepcion": "2026-06-20T00:00:00",
+      "estado_posicion": "Completa"
+    },
+    {
+      "numero_pedido": "4500119",
+      "posicion": "10",
+      "codigo_material": "M006",
+      "cantidad_solicitada": "40",
+      "cantidad_recibida": "0",
+      "fecha_recepcion": null,
+      "estado_posicion": "Pendiente"
+    },
+    {
+      "numero_pedido": "4500120",
+      "posicion": "10",
+      "codigo_material": "M010",
+      "cantidad_solicitada": "100",
+      "cantidad_recibida": "100",
+      "fecha_recepcion": "2026-06-15T00:00:00",
+      "estado_posicion": "Completa"
+    }
+  ],
+  "llegadas": [
+    {
+      "numero_pedido": "4500101",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-05T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-07T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-07T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500102",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-08T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-11T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-11T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500103",
+      "recibo_cedis": false,
+      "fecha_recibo_cedis": null,
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": true
+    },
+    {
+      "numero_pedido": "4500104",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-05-24T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-05-26T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-05-26T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500105",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-15T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-18T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-18T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500106",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-25T00:00:00",
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500107",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-05-19T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-05-21T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-05-21T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500108",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-07T00:00:00",
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500109",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-29T00:00:00",
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": true
+    },
+    {
+      "numero_pedido": "4500110",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-10T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-13T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-13T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500111",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-16T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-18T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-18T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500112",
+      "recibo_cedis": false,
+      "fecha_recibo_cedis": null,
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": true
+    },
+    {
+      "numero_pedido": "4500113",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-27T00:00:00",
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500114",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-01T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-03T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-03T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500115",
+      "recibo_cedis": false,
+      "fecha_recibo_cedis": null,
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": true
+    },
+    {
+      "numero_pedido": "4500116",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-13T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-16T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-16T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500117",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-07-01T00:00:00",
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": true
+    },
+    {
+      "numero_pedido": "4500118",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-18T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-20T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-20T00:00:00",
+      "pendiente_cita": false
+    },
+    {
+      "numero_pedido": "4500119",
+      "recibo_cedis": false,
+      "fecha_recibo_cedis": null,
+      "recibo_tienda": false,
+      "fecha_recibo_tienda": null,
+      "cedis_entrega_tienda": false,
+      "fecha_entrega_tienda": null,
+      "pendiente_cita": true
+    },
+    {
+      "numero_pedido": "4500120",
+      "recibo_cedis": true,
+      "fecha_recibo_cedis": "2026-06-13T00:00:00",
+      "recibo_tienda": true,
+      "fecha_recibo_tienda": "2026-06-15T00:00:00",
+      "cedis_entrega_tienda": true,
+      "fecha_entrega_tienda": "2026-06-15T00:00:00",
+      "pendiente_cita": false
+    }
+  ],
+  "citas": [
+    {
+      "id_cita": "CIT0001",
+      "numero_pedido": "4500101",
+      "codigo_proveedor": "P001",
+      "codigo_cedis": "C01",
+      "fecha": "2026-06-06T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0002",
+      "numero_pedido": "4500102",
+      "codigo_proveedor": "P001",
+      "codigo_cedis": "C01",
+      "fecha": "2026-06-08T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0003",
+      "numero_pedido": "4500104",
+      "codigo_proveedor": "P002",
+      "codigo_cedis": "C04",
+      "fecha": "2026-05-25T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0004",
+      "numero_pedido": "4500105",
+      "codigo_proveedor": "P003",
+      "codigo_cedis": "C02",
+      "fecha": "2026-06-15T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0005",
+      "numero_pedido": "4500106",
+      "codigo_proveedor": "P003",
+      "codigo_cedis": "C01",
+      "fecha": "2026-07-18T00:00:00",
+      "hora": "11:00",
+      "estado": "Confirmada",
+      "entrega_realizada": false
+    },
+    {
+      "id_cita": "CIT0006",
+      "numero_pedido": "4500107",
+      "codigo_proveedor": "P004",
+      "codigo_cedis": "C03",
+      "fecha": "2026-05-20T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0007",
+      "numero_pedido": "4500108",
+      "codigo_proveedor": "P004",
+      "codigo_cedis": "C03",
+      "fecha": "2026-07-04T00:00:00",
+      "hora": "09:30",
+      "estado": "Vencida",
+      "entrega_realizada": false
+    },
+    {
+      "id_cita": "CIT0008",
+      "numero_pedido": "4500109",
+      "codigo_proveedor": "P005",
+      "codigo_cedis": "C01",
+      "fecha": "2026-07-13T00:00:00",
+      "hora": "13:00",
+      "estado": "Programada",
+      "entrega_realizada": false
+    },
+    {
+      "id_cita": "CIT0009",
+      "numero_pedido": "4500110",
+      "codigo_proveedor": "P005",
+      "codigo_cedis": "C04",
+      "fecha": "2026-06-10T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0010",
+      "numero_pedido": "4500111",
+      "codigo_proveedor": "P006",
+      "codigo_cedis": "C02",
+      "fecha": "2026-06-17T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0011",
+      "numero_pedido": "4500113",
+      "codigo_proveedor": "P007",
+      "codigo_cedis": "C03",
+      "fecha": "2026-07-18T00:00:00",
+      "hora": "11:00",
+      "estado": "Confirmada",
+      "entrega_realizada": false
+    },
+    {
+      "id_cita": "CIT0012",
+      "numero_pedido": "4500114",
+      "codigo_proveedor": "P007",
+      "codigo_cedis": "C03",
+      "fecha": "2026-06-02T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0013",
+      "numero_pedido": "4500116",
+      "codigo_proveedor": "P008",
+      "codigo_cedis": "C04",
+      "fecha": "2026-06-13T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0014",
+      "numero_pedido": "4500117",
+      "codigo_proveedor": "P001",
+      "codigo_cedis": "C03",
+      "fecha": "2026-07-13T00:00:00",
+      "hora": "13:00",
+      "estado": "Programada",
+      "entrega_realizada": false
+    },
+    {
+      "id_cita": "CIT0015",
+      "numero_pedido": "4500118",
+      "codigo_proveedor": "P002",
+      "codigo_cedis": "C02",
+      "fecha": "2026-06-19T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    },
+    {
+      "id_cita": "CIT0016",
+      "numero_pedido": "4500120",
+      "codigo_proveedor": "P004",
+      "codigo_cedis": "C01",
+      "fecha": "2026-06-14T00:00:00",
+      "hora": "10:00",
+      "estado": "Cumplida",
+      "entrega_realizada": true
+    }
+  ],
+  "inventario": [
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M001",
+      "inventario_disponible": "70",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M003",
+      "inventario_disponible": "0",
+      "inventario_transito": "63",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M004",
+      "inventario_disponible": "0",
+      "inventario_transito": "60",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M005",
+      "inventario_disponible": "0",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M007",
+      "inventario_disponible": "35",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M008",
+      "inventario_disponible": "52",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M010",
+      "inventario_disponible": "35",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T001",
+      "codigo_material": "M011",
+      "inventario_disponible": "0",
+      "inventario_transito": "40",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T002",
+      "codigo_material": "M001",
+      "inventario_disponible": "40",
+      "inventario_transito": "0",
+      "faltante": "20"
+    },
+    {
+      "codigo_tienda": "T002",
+      "codigo_material": "M003",
+      "inventario_disponible": "16",
+      "inventario_transito": "0",
+      "faltante": "48"
+    },
+    {
+      "codigo_tienda": "T002",
+      "codigo_material": "M012",
+      "inventario_disponible": "0",
+      "inventario_transito": "200",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T003",
+      "codigo_material": "M002",
+      "inventario_disponible": "0",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T003",
+      "codigo_material": "M007",
+      "inventario_disponible": "0",
+      "inventario_transito": "90",
+      "faltante": "80"
+    },
+    {
+      "codigo_tienda": "T003",
+      "codigo_material": "M008",
+      "inventario_disponible": "0",
+      "inventario_transito": "60",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T003",
+      "codigo_material": "M009",
+      "inventario_disponible": "0",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T003",
+      "codigo_material": "M010",
+      "inventario_disponible": "21",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T003",
+      "codigo_material": "M011",
+      "inventario_disponible": "18",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T004",
+      "codigo_material": "M004",
+      "inventario_disponible": "60",
+      "inventario_transito": "0",
+      "faltante": "30"
+    },
+    {
+      "codigo_tienda": "T004",
+      "codigo_material": "M006",
+      "inventario_disponible": "42",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T004",
+      "codigo_material": "M008",
+      "inventario_disponible": "40",
+      "inventario_transito": "0",
+      "faltante": "20"
+    },
+    {
+      "codigo_tienda": "T004",
+      "codigo_material": "M009",
+      "inventario_disponible": "18",
+      "inventario_transito": "0",
+      "faltante": "54"
+    },
+    {
+      "codigo_tienda": "T004",
+      "codigo_material": "M012",
+      "inventario_disponible": "20",
+      "inventario_transito": "0",
+      "faltante": "60"
+    },
+    {
+      "codigo_tienda": "T005",
+      "codigo_material": "M001",
+      "inventario_disponible": "88",
+      "inventario_transito": "0",
+      "faltante": "30"
+    },
+    {
+      "codigo_tienda": "T005",
+      "codigo_material": "M002",
+      "inventario_disponible": "42",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T005",
+      "codigo_material": "M009",
+      "inventario_disponible": "18",
+      "inventario_transito": "0",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T005",
+      "codigo_material": "M010",
+      "inventario_disponible": "14",
+      "inventario_transito": "0",
+      "faltante": "42"
+    },
+    {
+      "codigo_tienda": "T006",
+      "codigo_material": "M001",
+      "inventario_disponible": "0",
+      "inventario_transito": "84",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T006",
+      "codigo_material": "M006",
+      "inventario_disponible": "0",
+      "inventario_transito": "80",
+      "faltante": "0"
+    },
+    {
+      "codigo_tienda": "T006",
+      "codigo_material": "M009",
+      "inventario_disponible": "21",
+      "inventario_transito": "0",
+      "faltante": "0"
+    }
+  ]
+}
