@@ -259,6 +259,37 @@ function buscarProveedorPorNombreAproximado(texto) {
   return buscarPorNombreAproximado(texto, proveedores, 'codigo_proveedor', 'nombre');
 }
 
+/**
+ * Mejor puntaje de similitud contra un catálogo, SIN aplicar el umbral de aceptación (0.72).
+ * Uso: distinguir, en entity-extractor.js, "el usuario no mencionó ninguna tienda/material/
+ * proveedor este turno" de "sí lo intentó, pero no calzó lo bastante bien con nada real" —
+ * ambos casos antes se veían idénticos (cero candidatos aceptados) y terminaban rellenándose
+ * en silencio con la entidad de memoria de un turno anterior no relacionado.
+ */
+function mejorPuntajeAproximado(texto, filas, campoNombre) {
+  let mejor = 0;
+  for (const fila of filas) {
+    const { score } = coincidenciaAproximada(texto, fila[campoNombre], 0);
+    if (score > mejor) mejor = score;
+  }
+  return mejor;
+}
+
+function mejorPuntajeTienda(texto) {
+  const { tiendas } = obtenerDatosCacheados();
+  return mejorPuntajeAproximado(texto, tiendas, 'nombre');
+}
+
+function mejorPuntajeMaterial(texto) {
+  const { materiales } = obtenerDatosCacheados();
+  return mejorPuntajeAproximado(texto, materiales, 'descripcion');
+}
+
+function mejorPuntajeProveedor(texto) {
+  const { proveedores } = obtenerDatosCacheados();
+  return mejorPuntajeAproximado(texto, proveedores, 'nombre');
+}
+
 export {
   obtenerProveedor,
   obtenerCedis,
@@ -275,4 +306,7 @@ export {
   buscarTiendaPorNombreAproximado,
   buscarMaterialPorNombreAproximado,
   buscarProveedorPorNombreAproximado,
+  mejorPuntajeTienda,
+  mejorPuntajeMaterial,
+  mejorPuntajeProveedor,
 };

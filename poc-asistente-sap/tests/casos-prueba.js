@@ -537,6 +537,84 @@ const casosDePrueba = [
       },
     ],
   },
+
+  // ---------------------------------------------------------------------
+  // Falso positivo por memoria: una segunda consulta sobre un pedido/tienda/
+  // material/proveedor que NO existe (o que el motor no logra reconocer)
+  // repetía en silencio el detalle del turno anterior, en vez de decir que no
+  // existe. Causa raíz: cuando el turno actual no aportaba un candidato para
+  // ese tipo de entidad, se veía IDÉNTICO a "el usuario no mencionó ninguno" y
+  // se rellenaba con la memoria de un turno anterior no relacionado.
+  // ---------------------------------------------------------------------
+  {
+    nombre: 'Falso positivo: pedido con número mal formado (9 dígitos) no repite el pedido anterior',
+    turnos: [
+      { mensaje: 'como va el pedido 4500105', verificar: (r) => r.intenciones.includes('consultar_pedido') },
+      {
+        mensaje: 'y el pedido 999999999?',
+        verificar: (r) => incluye(r.respuesta.texto, 'no encontré') && !incluye(r.respuesta.texto, '4500105'),
+      },
+    ],
+  },
+  {
+    nombre: 'Falso positivo: pedido con número mal formado (partido por un espacio) no repite el anterior',
+    turnos: [
+      { mensaje: 'como va el pedido 4500105', verificar: (r) => r.intenciones.includes('consultar_pedido') },
+      {
+        mensaje: 'y el pedido 4500 199?',
+        verificar: (r) => incluye(r.respuesta.texto, 'no encontré') && !incluye(r.respuesta.texto, '4500105'),
+      },
+    ],
+  },
+  {
+    nombre: 'Falso positivo: tienda inexistente no repite el inventario de la tienda anterior',
+    turnos: [
+      {
+        mensaje: 'cuánto inventario hay en la tienda reforma',
+        verificar: (r) => r.intenciones.includes('consultar_inventario'),
+      },
+      {
+        mensaje: 'y cuánto inventario hay en la tienda monterrey norte?',
+        verificar: (r) => !incluye(r.respuesta.texto, 'Aceite Vegetal') && !incluye(r.respuesta.texto, 'Arroz Blanco'),
+      },
+    ],
+  },
+  {
+    nombre: 'Falso positivo: material inexistente no repite el material de la consulta anterior',
+    turnos: [
+      {
+        mensaje: 'cuánto inventario hay del material aceite vegetal en la tienda t001',
+        verificar: (r) => incluye(r.respuesta.texto, 'Aceite Vegetal'),
+      },
+      {
+        mensaje: 'y cuánto inventario hay del material yogurt griego en la tienda t001?',
+        verificar: (r) => incluye(r.respuesta.texto, 'no tengo registro de ese material') && !incluye(r.respuesta.texto, '35 disponibles'),
+      },
+    ],
+  },
+  {
+    nombre: 'Falso positivo: proveedor inexistente no repite los pedidos del proveedor anterior',
+    turnos: [
+      {
+        mensaje: 'que pedidos tiene el proveedor alimentos san miguel',
+        verificar: (r) => incluye(r.respuesta.texto, 'Alimentos San Miguel'),
+      },
+      {
+        mensaje: 'y qué pedidos tiene el proveedor importadora zeta?',
+        verificar: (r) => incluye(r.respuesta.texto, 'no encontré') && !incluye(r.respuesta.texto, 'Alimentos San Miguel'),
+      },
+    ],
+  },
+  {
+    nombre: 'Falso positivo: la memoria conversacional legítima sigue funcionando (sin nombre nuevo)',
+    turnos: [
+      { mensaje: 'como va el pedido 4500105', verificar: (r) => r.intenciones.includes('consultar_pedido') },
+      {
+        mensaje: 'y el proveedor de ese pedido, cuales otros pedidos tiene?',
+        verificar: (r) => r.intenciones.includes('buscar_pedidos_por_proveedor') && incluye(r.respuesta.texto, 'Alimentos San Miguel'),
+      },
+    ],
+  },
 ];
 
 export { casosDePrueba };
